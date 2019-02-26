@@ -20,7 +20,7 @@ def validate_ami_path_parameters(event):
         raise ValueError('Invalid input - missing aws_region as part of path parameters')
     return event['pathParameters']['aws_image_id'], event['pathParameters']['aws_region']
 
-def create_ami_record(response):
+def build_ami_object(response):
     values = response['sqlStatementResults'][0]['resultFrame']['records'][0]
     names = response['sqlStatementResults'][0]['resultFrame']['resultSetMetadata'][0]
     for idx, name in enumerate(names):
@@ -41,7 +41,7 @@ def find_ami(event):
         sqlStatements=sql_stmt
     )
     if len(response['sqlStatementResults'][0]['resultFrame']['records']) > 0:
-        return create_ami_record(response), True
+        return build_ami_object(response), True
     return {}, False
 
 def success(output):

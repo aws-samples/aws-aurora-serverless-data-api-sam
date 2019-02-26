@@ -29,11 +29,6 @@ pack_dist_dir="${pack_root_dir}/dist"
     --parameter-overrides \
         ProjectName="$app_name" \
         EnvType="$env_type" \
-        SourceS3Bucket="$source_s3_bucket" \
-        TargetS3Bucket="$target_s3_bucket" \
-        S3OperationType="$s3_operation_type" \
-        NumCopyLambdaWorkers="$num_copy_lambda_workers" \
-        MaxPayloadSizePerLambdaExecutionInMB="$max_payload_size_per_lambda_execution_in_mb" \
     --capabilities \
         CAPABILITY_IAM
 )
