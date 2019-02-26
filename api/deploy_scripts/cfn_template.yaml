@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creates a Step Functions state machine to copy S3 files from a source bucket/path to a target bucket/path based on file types (eg, mp4, jpg)
+Transform: 'AWS::Serverless-2016-10-31'
+Parameters:
+  AppName:
+    Description: "Application Name"
+    Type: String
+    Default: cmdb
+  EnvType:
+    Description: "Environment type (eg, dev, qa, prod)"
+    Type: String
+    Default: dev
+  EnvType:
+    Description: "Environment type (eg, dev, qa, prod)"
+    Type: String
+    Default: dev
+  AMITableName:
+    Description: "AMI Table name"
+    Type: String
+    Default: ami
+  RPMTableName:
+    Description: "RPM Table name"
+    Type: String
+    Default: rpm
+  AMIRPMTableName:
+    Description: "AMI-RPM Table name"
+    Type: String
+    Default: ami_rpm
+  AMIEventsTableName:
+    Description: "AMI events Table name"
+    Type: String
+    Default: ami_events
+Globals:
+  Function:
+    Runtime: python3.6
+    Timeout: 120
+    Handler: cmdb.handler
+    Environment:
+      Variables:
+        AMI_TABLE_NAME: !Ref AMITableName
+        RPM_TABLE_NAME: !Ref RPMTableName
+        AMI_EVENTS_TABLE_NAME: !Ref AMIRPMTableName
+        AMI_RPM_TABLE_NAME: !Ref AMIEventsTableName
+  Api:
+    EndpointConfiguration: REGIONAL
+Resources:
+  RegisterAMILambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Description: CMDB API Lambda function
+      FunctionName: !Sub "${EnvType}-${AppName}-register-ami-lambda"
+      Handler: register_ami.handler
+      Runtime: python3.6 
+      CodeUri: ../lambdas/
+      MemorySize: 256
+      Timeout: 120
+      Events:
+        AMIPost:
+          Type: Api
+          Properties:
+            Path: '/ami/{aws_image_id}/{aws_region}'
+            Method: post
+      Policies:
+        - Version: '2012-10-17' # Policy Document
+          Statement:
+            - Effect: Allow
+              Action:
+                - rds-data:ExecuteSql
+                - secretsmanager:GetSecretValue
+              Resource: '*'

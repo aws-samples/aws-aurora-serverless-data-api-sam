@@ -1,0 +1,14 @@
+
+CREATE TABLE IF NOT EXISTS ess_cmdb.ami_rpm (
+    aws_image_id VARCHAR(255) NOT NULL,
+    aws_region VARCHAR(30) NOT NULL,
+    rpm_name VARCHAR(255) NOT NULL,
+    rpm_version VARCHAR(255) NOT NULL,
+    rpm_repo VARCHAR(255) NOT NULL,
+    FOREIGN KEY (aws_image_id, aws_region)
+      REFERENCES ami(aws_image_id, aws_region)
+      ON DELETE CASCADE,
+    FOREIGN KEY (rpm_name, rpm_version, rpm_repo)
+      REFERENCES rpm(name, version, repo)
+      ON DELETE CASCADE
+)

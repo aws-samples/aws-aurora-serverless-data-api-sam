@@ -1,0 +1,16 @@
+
+CREATE TABLE IF NOT EXISTS ess_cmdb.ami_events (
+    event_id VARCHAR(255) NOT NULL,
+    aws_image_id VARCHAR(255) NOT NULL,
+    aws_region VARCHAR(30) NOT NULL,
+    event_timestamp_utc TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    event_type VARCHAR(255),
+    event_data VARCHAR(2000),
+    user_agent VARCHAR(255),
+    PRIMARY KEY (event_id),
+    FOREIGN KEY (aws_image_id, aws_region)
+      REFERENCES ami(aws_image_id, aws_region)
+      ON DELETE RESTRICT,
+    INDEX image_timestamp_idx (aws_image_id, aws_region, event_timestamp_utc)
+)
+

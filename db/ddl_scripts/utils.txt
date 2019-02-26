@@ -1,0 +1,165 @@
+
+database: ess_cmdb
+user: ess_user_dev
+pass: 1...!
+
+CREATE DATABASE ess_cmdb;
+
+USE ess_cmdb;
+
+DROP table ami_events;
+DROP table ami_rpm;
+DROP table ami;
+DROP table rpm;
+
+CREATE TABLE IF NOT EXISTS ess_cmdb.ami (
+    aws_image_id VARCHAR(255) NOT NULL,
+    aws_region VARCHAR(30) NOT NULL,
+    aws_account VARCHAR(13) NOT NULL,
+    image_type VARCHAR(255) NOT NULL, 
+    server_type VARCHAR(255),
+    base_os VARCHAR(255),
+    aws_root_ami_id VARCHAR(255),
+    aws_root_ami_region VARCHAR(30),
+    release_version VARCHAR(50),
+    ansible_playbook_label VARCHAR(255),
+    cm_state VARCHAR(255) NOT NULL,
+    jenkins_info VARCHAR(255),
+    creation_date_utc DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (aws_image_id, aws_region),
+    INDEX image_type_idx (image_type),
+    INDEX server_type_idx (server_type),
+    INDEX base_os_idx (base_os),
+    INDEX aws_root_ami_id_idx (aws_root_ami_id),
+    INDEX release_version_idx (release_version),
+    INDEX cm_state_idx (cm_state),
+    INDEX creation_date_utc_idx (creation_date_utc)
+)
+
+CREATE TABLE IF NOT EXISTS ess_cmdb.ami_events (
+    event_id VARCHAR(255) NOT NULL,
+    aws_image_id VARCHAR(255) NOT NULL,
+    aws_region VARCHAR(30) NOT NULL,
+    event_timestamp_utc TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    event_type VARCHAR(255),
+    event_data VARCHAR(2000),
+    user_agent VARCHAR(255),
+    PRIMARY KEY (event_id),
+    FOREIGN KEY (aws_image_id, aws_region)
+      REFERENCES ami(aws_image_id, aws_region)
+      ON DELETE RESTRICT,
+    INDEX image_timestamp_idx (aws_image_id, aws_region, event_timestamp_utc)
+)
+
+CREATE TABLE IF NOT EXISTS ess_cmdb.rpm (
+    rpm_id VARCHAR(255) NOT NULL,
+    creation_date_utc DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (rpm_id)
+)
+
+CREATE TABLE IF NOT EXISTS ess_cmdb.ami_rpm (
+    aws_image_id VARCHAR(255) NOT NULL,
+    aws_region VARCHAR(30) NOT NULL,
+    rpm_id VARCHAR(255) NOT NULL,
+    FOREIGN KEY (aws_image_id, aws_region)
+      REFERENCES ami(aws_image_id, aws_region)
+      ON DELETE CASCADE,
+    FOREIGN KEY (rpm_id)
+      REFERENCES rpm(rpm_id)
+      ON DELETE CASCADE
+)
+
+aws rds-data execute-sql \
+--db-cluster-or-instance-arn arn:aws:rds:us-east-1:123456789012:cluster:mydbcluster \
+--schema "" \
+--database "mydatabase" \
+--aws-secret-store-arn "arn:aws:secretsmanager:us-east-1:123456789012:secret:mysecret" \
+--sql-statements "select * from mytable" \
+--region us-east-1 \
+--no-verify-ssl \
+--endpoint-url https://rds-data.us-east-1.amazonaws.com
+
+insert into ami (
+    aws_image_id,
+    aws_region,
+    aws_account,
+    image_type, 
+    server_type, 
+    base_os,
+    aws_root_ami_id,
+    aws_root_ami_region,
+    release_version, 
+    ansible_playbook_label,
+    cm_state, 
+    jenkins_info
+)
+values(
+    'ami-66704d0c', 
+    'us-east-1', 
+    '123456789012', 
+    'root',
+    'mail server',
+    'centos 7-5.1804',
+    'ami-82f5fc95',
+    'us-east-1',     
+    'mojave',
+    'playbook-1',
+    'created',
+    'jenkins job 0001'
+)
+
+insert into rpm (
+    rpm_id
+)
+values(
+    'rpm-a-1.0'
+)
+
+insert into ami_rpm (
+    aws_image_id,
+    aws_region,
+    rpm_id
+)
+values(
+    'ami-66704d0c',
+    'us-east-1',
+    'rpm-a-1.0'
+)
+
+insert into ami_events (
+    event_id,
+    aws_image_id,
+    aws_region,
+    event_type,
+    event_data,
+    user_agent
+)
+values(
+    'af9b149c-392b-11e9-b210-d663bd873d93',
+    'ami-66704d0c',
+    'us-east-1',
+    'ami-creation',
+    '{}',
+    'jenkins-job-1'
+)
+
+
+select a.server_type, e.event_timestamp_utc
+from ami a, ami_events e
+where 
+	a.aws_image_id=e.aws_image_id
+and a.aws_region=e.aws_region
+
+Post Man
+{
+    "aws_account": "123456789012", 
+    "image_type": "root",
+    "server_type": "mail server",
+    "base_os": "centos 7-5.1804",
+    "aws_root_ami_id": "ami-10000001",
+    "aws_root_ami_region": "us-east-1",     
+    "release_version": "mojave",
+    "ansible_playbook_label": "playbook-1",
+    "cm_state": "created",
+    "jenkins_info": "jenkins job 0001"
+}
