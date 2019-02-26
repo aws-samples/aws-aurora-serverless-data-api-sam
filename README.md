@@ -65,6 +65,8 @@ GET: /ami/{ami-id-region}/event?start=YYYYMMDDHmmmSS&end=YYYYMMDDHmmmSS
 TODO
 
 ## TODO
+- API (POST: ami/): support RPMs as input
+- API (GET: ami/): return AMI and RPMs
 - API: allow updating the AMI state
 - Pass db_credentials_secrets_store_arn, database_name, and db_cluster_arn to Lambda functions
 - IaC: Cloudformation (YAML) for Aurora DB/Secrets Manager
