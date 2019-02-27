@@ -57,7 +57,7 @@ def handler(event, context):
             raise ValueError('Invalid input - body must contain AMI mandatory attributes')
         input_fields = validate_ami_fields(json.loads(event['body']))
 
-        dal.save_ami_to_db(aws_image_id, aws_region, input_fields)
+        dal.save_ami(aws_image_id, aws_region, input_fields)
         output = {
             # 'event': event,
             # 'db_response': response,

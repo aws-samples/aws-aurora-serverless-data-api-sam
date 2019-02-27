@@ -1,3 +1,9 @@
+#-----------------------------------------------------------------------------------------------
+# Data Access Layer
+# - Contains a data access layer class that interfaces with CM-DB to store and query entities
+#   such as AMIs, AMI events, and RPMs
+#-----------------------------------------------------------------------------------------------
+
 import boto3
 import json
 import os
@@ -8,9 +14,6 @@ ami_table_name = os.getenv('AMI_TABLE_NAME', 'ami')
 rpm_table_name = os.getenv('RPM_TABLE_NAME', 'rpm')
 ami_rpm_table_name = os.getenv('AMI_RPM_TABLE_NAME', 'ami_rpm')
 
-#-----------------------------------------------------------------------------------------------
-# Data Access Layer class
-#-----------------------------------------------------------------------------------------------
 class DataAccessLayer:
 
     def __init__(self, database_name, db_cluster_arn, db_credentials_secrets_store_arn):
@@ -28,15 +31,19 @@ class DataAccessLayer:
     )
 
     def _build_object_from_db_response(self, db_response):
-        obj = dict()
-        if len(db_response['sqlStatementResults'][0]['resultFrame']['records']) > 0:
-            values = db_response['sqlStatementResults'][0]['resultFrame']['records'][0]['values']
-            names = db_response['sqlStatementResults'][0]['resultFrame']['resultSetMetadata']['columnMetadata']
-            for idx, metadata in enumerate(names):
-                field_name = metadata['name']
-                field_value = values[idx]['stringValue']
-                obj[field_name] = field_value
-        return obj
+        list_objs = []
+        num_records = len(db_response['sqlStatementResults'][0]['resultFrame']['records'])
+        if num_records > 0:
+            for i in range(0,num_records):
+                obj = dict()
+                values = db_response['sqlStatementResults'][0]['resultFrame']['records'][i]['values']
+                names = db_response['sqlStatementResults'][0]['resultFrame']['resultSetMetadata']['columnMetadata']
+                for idx, metadata in enumerate(names):
+                    field_name = metadata['name']
+                    field_value = values[idx]['stringValue']
+                    obj[field_name] = field_value
+                list_objs.append(obj)
+        return {} if num_records == 0 else (list_objs[0] if num_records==1 else list_objs)
 
     #-----------------------------------------------------------------------------------------------
     # RPM Functions
@@ -46,7 +53,7 @@ class DataAccessLayer:
         response = self.execute_sql(sql)
         return self._build_object_from_db_response(response)
 
-    def insert_rpm(self, name, version, repo):
+    def save_rpm(self, name, version, repo):
         sql = f'insert into {rpm_table_name} (name, version, repo) values ("{name}","{version}","{repo}")'
         response = self.execute_sql(sql)
         return response
@@ -54,7 +61,12 @@ class DataAccessLayer:
     #-----------------------------------------------------------------------------------------------
     # AMI-RPM Functions
     #-----------------------------------------------------------------------------------------------
-    def save_ami_to_db_rpm_relation(self, aws_image_id, aws_region, rpm_name, rpm_version, rpm_repo):
+    def _find_ami_rpm_relations(self, aws_image_id, aws_region):
+        sql = f'select * from {ami_rpm_table_name} where aws_image_id="{aws_image_id}" and aws_region="{aws_region}"'
+        response = self.execute_sql(sql)
+        return self._build_object_from_db_response(response)
+
+    def _save_ami_rpm_relation(self, aws_image_id, aws_region, rpm_name, rpm_version, rpm_repo):
         sql = f'insert into {ami_rpm_table_name} (aws_image_id, aws_region, rpm_name, rpm_version, rpm_repo) values ("{aws_image_id}", "{aws_region}", "{rpm_name}", "{rpm_version}", "{rpm_repo}")'
         response = self.execute_sql(sql)
         return response
@@ -80,9 +92,14 @@ class DataAccessLayer:
     def find_ami(self, aws_image_id, aws_region):
         sql = f'select * from {ami_table_name} where aws_image_id="{aws_image_id}" and aws_region="{aws_region}"'
         response = self.execute_sql(sql)
-        return self._build_object_from_db_response(response)
+        ami_obj = self._build_object_from_db_response(response)
+        if (ami_obj):
+            # find ami-rpm relations and add rpms to returned ami object
+            ami_rpm_relations = self._find_ami_rpm_relations(aws_image_id, aws_region)
+            ami_obj['rpms'] = [self.find_rpm(r['rpm_name'], r['rpm_version'], r['rpm_repo']) for r in ami_rpm_relations]
+        return ami_obj
 
-    def save_ami_to_db(self, aws_image_id, aws_region, input_fields):
+    def save_ami(self, aws_image_id, aws_region, input_fields):
         # rpms have their own table, so remove it to construct the ami record
         ami_fields = input_fields.copy()
         ami_fields.pop('rpms')
@@ -96,7 +113,7 @@ class DataAccessLayer:
             for rpm in input_fields['rpms']:
                 rpm_obj = self.find_rpm(rpm['name'], rpm['version'], rpm['repo'])
                 if not rpm_obj:
-                    self.insert_rpm(rpm['name'], rpm['version'], rpm['repo'])
+                    self.save_rpm(rpm['name'], rpm['version'], rpm['repo'])
                 # also need to add an ami-rpm relationship regardless
-                self.save_ami_to_db_rpm_relation(aws_image_id, aws_region, rpm['name'], rpm['version'], rpm['repo'])        
+                self._save_ami_rpm_relation(aws_image_id, aws_region, rpm['name'], rpm['version'], rpm['repo'])        
 

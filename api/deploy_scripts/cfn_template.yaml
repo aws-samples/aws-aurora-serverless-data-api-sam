@@ -43,7 +43,7 @@ Resources:
   RegisterAMILambda:
     Type: 'AWS::Serverless::Function'
     Properties:
-      Description: CMDB API Lambda function
+      Description: Saves an AMI on CM-DB
       FunctionName: !Sub "${EnvType}-${AppName}-register-ami-lambda"
       Handler: register_ami.handler
       CodeUri: ../lambdas/
@@ -53,6 +53,27 @@ Resources:
           Properties:
             Path: '/ami/{aws_image_id}/{aws_region}'
             Method: post
+      Policies:
+        - Version: '2012-10-17' # Policy Document
+          Statement:
+            - Effect: Allow
+              Action:
+                - rds-data:ExecuteSql
+                - secretsmanager:GetSecretValue
+              Resource: '*'
+  FindAMILambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Description: Find an AMI for a given ami-id and region
+      FunctionName: !Sub "${EnvType}-${AppName}-find-ami-lambda"
+      Handler: find_ami.handler
+      CodeUri: ../lambdas/
+      Events:
+        AMIPost:
+          Type: Api
+          Properties:
+            Path: '/ami/{aws_image_id}/{aws_region}'
+            Method: get
       Policies:
         - Version: '2012-10-17' # Policy Document
           Statement:

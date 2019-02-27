@@ -118,6 +118,81 @@ POST: /ami/{aws_image_id}/{aws_region}/event/
 
 ### get an AMI record (eg, what’s in an AMI?)
 
+#### Request
+
+```
+GET: /ami/{aws_image_id}/{aws_region}
+```
+
+#### Response
+
+* Success - HttpCode=200 (AMI found)
+
+Example:
+
+```
+{
+    "record": {
+        "aws_image_id": "ami-00011300",
+        "aws_region": "us-east-1",
+        "aws_account": "123456789012",
+        "image_type": "root",
+        "server_type": "mail server",
+        "base_os": "centos 7-5.1804",
+        "aws_root_ami_id": "ami-10000001",
+        "aws_root_ami_region": "us-east-1",
+        "release_version": "mojave",
+        "ansible_playbook_label": "playbook-1",
+        "cm_state": "created",
+        "jenkins_info": "jenkins job 0001",
+        "creation_date_utc": "2019-02-27 16:52:46.0",
+        "rpms": [
+            {
+                "name": "rpm-4",
+                "version": "v1",
+                "repo": "repo-3",
+                "creation_date_utc": "2019-02-27 14:44:47.0"
+            },
+            {
+                "name": "rpm-4",
+                "version": "v2",
+                "repo": "repo-3",
+                "creation_date_utc": "2019-02-27 14:47:08.0"
+            },
+            {
+                "name": "rpm-5",
+                "version": "v1",
+                "repo": "repo-3",
+                "creation_date_utc": "2019-02-27 14:47:09.0"
+            },
+            {
+                "name": "rpm-6",
+                "version": "v1",
+                "repo": "repo-4",
+                "creation_date_utc": "2019-02-27 14:47:09.0"
+            }
+        ]
+    },
+    "record_found": true
+}
+```
+
+* Success - HttpCode=200 (AMI not found)
+
+{
+    "record": {},
+    "record_found": false
+}
+
+* Error - HttpCode=400
+
+Example:
+
+```
+{
+    "error_message": "Some error message"
+}
+
 ```
 GET: /ami/{aws_image_id}/{aws_region}
 ```
