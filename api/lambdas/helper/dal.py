@@ -77,6 +77,11 @@ class DataAccessLayer:
         sql.append(')')
         return ''.join(sql)
 
+    def find_ami(self, aws_image_id, aws_region):
+        sql = f'select * from {ami_table_name} where aws_image_id="{aws_image_id}" and aws_region="{aws_region}"'
+        response = self.execute_sql(sql)
+        return self._build_object_from_db_response(response)
+
     def save_ami_to_db(self, aws_image_id, aws_region, input_fields):
         # rpms have their own table, so remove it to construct the ami record
         ami_fields = input_fields.copy()

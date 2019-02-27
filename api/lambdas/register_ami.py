@@ -4,7 +4,6 @@ import os
 from helper.dal import *
 from helper.utils import *
 
-# TODO: use environment variables
 database_name = os.getenv('DB_NAME', 'ess_cmdb')
 db_cluster_arn = os.getenv('DB_CLUSTER_ARN', 'arn:aws:rds:us-east-1:665243897136:cluster:ess-cmdb')
 db_credentials_secrets_store_arn = os.getenv('DB_CRED_SECRETS_STORE_ARN', 'arn:aws:secretsmanager:us-east-1:665243897136:secret:dev/cmdb/aurora-HlUTfC')
@@ -67,4 +66,4 @@ def handler(event, context):
         return success(output)
     except Exception as e:
         print(f'Error: {e}')
-        return error(400, str(e))
+        return error(400, str(e)) 
