@@ -93,9 +93,10 @@ Example:
             }
         ]
     }
-}```
+}
+```
 
-* Success - HttpCode=400
+* Error - HttpCode=400
 
 Example:
 
