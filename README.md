@@ -25,7 +25,7 @@ Notice that we only specify the prefix of the file `cmdb-dev` not the full file 
 ## APIs (Draft)
 
 
-### AMI creation API (will add a 'ami-created' event record to table 'ami_events')
+### Register new AMI on CM-DB (Done)
  
 #### Request
 
@@ -53,7 +53,7 @@ POST: /ami/{aws_image_id}/{aws_region}
 
 #### Response
 
-* Success - HttpCode=200 
+**Success - HttpCode=200**
 
 Example:
 
@@ -96,7 +96,7 @@ Example:
 }
 ```
 
-* Error - HttpCode=400
+**Error - HttpCode=400**
 
 Example:
 
@@ -104,21 +104,11 @@ Example:
 {
     "error_message": "An error occurred (BadRequestException) when calling the ExecuteSql operation: Duplicate entry 'ami-00011200-us-east-1' for key 'PRIMARY'"
 }
-  
-### Log a lifecycle event associated w/ an existing AMI
-
-```
-POST: /ami/{aws_image_id}/{aws_region}/event/
-{
-    event_type,
-    event_data,
-    user_agent
-}
 ```
 
-### get an AMI record (eg, what’s in an AMI?)
+### Get an AMI record (Done)
 
-#### Request
+#### Request (What's in an AMI?)
 
 ```
 GET: /ami/{aws_image_id}/{aws_region}
@@ -126,7 +116,7 @@ GET: /ami/{aws_image_id}/{aws_region}
 
 #### Response
 
-* Success - HttpCode=200 (AMI found)
+**Success - HttpCode=200 (AMI found)**
 
 Example:
 
@@ -177,14 +167,14 @@ Example:
 }
 ```
 
-* Success - HttpCode=200 (AMI not found)
+**Success - HttpCode=200 (AMI not found)**
 
 {
     "record": {},
     "record_found": false
 }
 
-* Error - HttpCode=400
+**Error - HttpCode=400**
 
 Example:
 
@@ -192,24 +182,31 @@ Example:
 {
     "error_message": "Some error message"
 }
-
-```
-GET: /ami/{aws_image_id}/{aws_region}
 ```
 
-### search AMIs (which AMIs have RPM rpm-1)
+### Log a lifecycle event associated w/ an existing AMI
+
+#### Request
+
+```
+POST: /ami/{aws_image_id}/{aws_region}/event/
+{
+    event_type,
+    event_data,
+    user_agent
+}
+```
+
+### Search AMIs base on specific values
+
+#### Request
 
 ```
 GET: /ami?rpm=rpm-1
-```
-
-### search AMIs (what’s in SI)
-
-```
 GET: /ami?cm_state=IN_SI
 ```
 
-### get AMI events within an interval
+### Get AMI events within an interval
 
 ```
 GET: /ami/{ami-id-region}/event?start=YYYYMMDDHmmmSS&end=YYYYMMDDHmmmSS
