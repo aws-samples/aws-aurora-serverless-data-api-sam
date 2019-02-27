@@ -24,14 +24,14 @@ def validate_ami_path_parameters(event):
 def handler(event, context):
     try:
         aws_image_id, aws_region = validate_ami_path_parameters(event)
-        record = dal.find_ami(aws_image_id, aws_region)
+        list_amis = dal.find_ami(aws_image_id, aws_region)
         output = {
             # 'event': event,
             # 'db_response': response
-            'record': record,
-            'record_found': 'aws_image_id' in record
+            'record': list_amis[0] if len(list_amis) > 0 else {},
+            'record_found': len(list_amis) > 0
         }
-        print(f'Output: {record}')
+        print(f'Output: {output}')
         return success(output)
     except Exception as e:
         print(f'Error: {e}')

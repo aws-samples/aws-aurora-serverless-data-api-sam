@@ -19,7 +19,7 @@ if __name__ == "__main__":
             "X-Forwarded-Proto": "https"
         },
         "pathParameters": {
-            "aws_image_id": "ami-00100008",
+            "aws_image_id": "ami-00199008",
             "aws_region": "us-east-1"
         },
         "requestContext": {
@@ -39,13 +39,6 @@ if __name__ == "__main__":
             "apiId": "9ru2poro88"
         },
         'body':'{\n "aws_account": "123456789012", \n "image_type": "root",\n "server_type": "mail server",\n "base_os": "centos 7-5.1804",\n "aws_root_ami_id": "ami-10000001",\n "aws_root_ami_region": "us-east-1", \n "release_version": "mojave",\n "ansible_playbook_label": "playbook-1",\n "cm_state": "created",\n "jenkins_info": "jenkins job 0001",\n "rpms": [\n \t{"name": "rpm-1", "version": "v1", "repo": "repo-1"},\n \t{"name": "rpm-1", "version": "v2", "repo": "repo-1"},\n \t{"name": "rpm-2", "version": "v1", "repo": "repo-1"},\n \t{"name": "rpm-3", "version": "v1", "repo": "repo-2"}\n ]\n}'
-        # "body": "{\n    \"aws_account\": \"123456789012\", \n    \"image_type\": \"root\",\n    \"server_type\": \"mail server\",\n    \"base_os\": \"centos 7-5.1804\",\n    \"aws_root_ami_id\": \"ami-10000001\",\n    \"aws_root_ami_region\": \"us-east-1\",     \n    \"release_version\": \"mojave\",\n    \"ansible_playbook_label\": \"playbook-1\",\n    \"cm_state\": \"ami-created\",\n    \"jenkins_info\": \"jenkins job 0001\"\n}"
-        # "body": "{\n    \"aws_account\": \"123456789012\", \n    \"image_type\": \"root\",\n    \"server_type\": \"mail server\",\n    \"base_os\": \"centos 7-5.1804\",\n    \"aws_root_ami_id\": \"ami-10000001\",\n    \"aws_root_ami_region\": \"us-east-1\",     \n    \"release_version\": \"mojave\",\n    \"ansible_playbook_label\": \"playbook-1\",\n    \"jenkins_info\": \"jenkins job 0001\"\n}"
     }
     result = register_ami.handler(event,{})
     print(f"Result: {result}")
-    # rpm_obj = find_rpm('rpm-1', 'v1', 'repo-1')
-    # if (rpm_obj):
-    #     print(rpm_obj)
-    # else:
-    #     print('cant find rpm')    

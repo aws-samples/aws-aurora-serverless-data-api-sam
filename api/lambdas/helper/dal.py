@@ -43,7 +43,7 @@ class DataAccessLayer:
                     field_value = values[idx]['stringValue']
                     obj[field_name] = field_value
                 list_objs.append(obj)
-        return {} if num_records == 0 else (list_objs[0] if num_records==1 else list_objs)
+        return list_objs
 
     #-----------------------------------------------------------------------------------------------
     # RPM Functions
@@ -92,12 +92,12 @@ class DataAccessLayer:
     def find_ami(self, aws_image_id, aws_region):
         sql = f'select * from {ami_table_name} where aws_image_id="{aws_image_id}" and aws_region="{aws_region}"'
         response = self.execute_sql(sql)
-        ami_obj = self._build_object_from_db_response(response)
-        if (ami_obj):
+        amis = self._build_object_from_db_response(response)
+        for ami_obj in amis:
             # find ami-rpm relations and add rpms to returned ami object
             ami_rpm_relations = self._find_ami_rpm_relations(aws_image_id, aws_region)
-            ami_obj['rpms'] = [self.find_rpm(r['rpm_name'], r['rpm_version'], r['rpm_repo']) for r in ami_rpm_relations]
-        return ami_obj
+            ami_obj['rpms'] = [self.find_rpm(r['rpm_name'], r['rpm_version'], r['rpm_repo'])[0] for r in ami_rpm_relations]
+        return amis
 
     def save_ami(self, aws_image_id, aws_region, input_fields):
         # rpms have their own table, so remove it to construct the ami record
