@@ -10,10 +10,6 @@ Parameters:
     Description: "Environment type (eg, dev, qa, prod)"
     Type: String
     Default: dev
-  EnvType:
-    Description: "Environment type (eg, dev, qa, prod)"
-    Type: String
-    Default: dev
   AMITableName:
     Description: "AMI Table name"
     Type: String
@@ -34,13 +30,13 @@ Globals:
   Function:
     Runtime: python3.6
     Timeout: 120
-    Handler: cmdb.handler
+    MemorySize: 256
     Environment:
       Variables:
         AMI_TABLE_NAME: !Ref AMITableName
         RPM_TABLE_NAME: !Ref RPMTableName
-        AMI_EVENTS_TABLE_NAME: !Ref AMIRPMTableName
-        AMI_RPM_TABLE_NAME: !Ref AMIEventsTableName
+        AMI_RPM_TABLE_NAME: !Ref AMIRPMTableName
+        AMI_EVENTS_TABLE_NAME: !Ref AMIEventsTableName
   Api:
     EndpointConfiguration: REGIONAL
 Resources:
@@ -50,10 +46,7 @@ Resources:
       Description: CMDB API Lambda function
       FunctionName: !Sub "${EnvType}-${AppName}-register-ami-lambda"
       Handler: register_ami.handler
-      Runtime: python3.6 
       CodeUri: ../lambdas/
-      MemorySize: 256
-      Timeout: 120
       Events:
         AMIPost:
           Type: Api

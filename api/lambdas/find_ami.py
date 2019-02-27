@@ -26,7 +26,6 @@ def build_ami_object(response):
     for idx, name in enumerate(names):
         print(f'name: {values[idx]}')
 
-
 def build_sql_statement(aws_image_id, aws_region):
     return f'SELECT * FROM ami WHERE aws_image_id="{aws_image_id}" AND aws_region="{aws_region}"'
 

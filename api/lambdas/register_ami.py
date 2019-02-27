@@ -68,12 +68,12 @@ def find_rpm(name, version, repo):
 def insert_rpm(name, version, repo):
     sql = f'insert into {rpm_table_name} (name, version, repo) values ("{name}","{version}","{repo}")'
     response = execute_sql(sql)
-    return build_object_from_db_response(response)
+    return response
 
 #-----------------------------------------------------------------------------------------------
 # AMI-RPM Functions
 #-----------------------------------------------------------------------------------------------
-def insert_ami_rpm_relation(aws_image_id, aws_region, rpm_name, rpm_version, rpm_repo):
+def save_ami_to_db_rpm_relation(aws_image_id, aws_region, rpm_name, rpm_version, rpm_repo):
     sql = f'insert into {ami_rpm_table_name} (aws_image_id, aws_region, rpm_name, rpm_version, rpm_repo) values ("{aws_image_id}", "{aws_region}", "{rpm_name}", "{rpm_version}", "{rpm_repo}")'
     response = execute_sql(sql)
     return response
@@ -96,9 +96,9 @@ def build_ami_insert_sql_statement(record):
     sql.append(')')
     return ''.join(sql)
 
-def insert_ami(aws_image_id, aws_region, fields):
+def save_ami_to_db(aws_image_id, aws_region, input_fields):
     # rpms have their own table, so remove it to construct the ami record
-    ami_fields = fields.copy()
+    ami_fields = input_fields.copy()
     ami_fields.pop('rpms')
     ami_record = build_ami_record(aws_image_id, aws_region, ami_fields)
     sql_stmt = build_ami_insert_sql_statement(ami_record)
@@ -106,13 +106,13 @@ def insert_ami(aws_image_id, aws_region, fields):
     response = execute_sql(sql_stmt)
 
     # we might have to add rpms if they're new...
-    if 'rpms' in fields:
-        for rpm in fields['rpms']:
+    if 'rpms' in input_fields:
+        for rpm in input_fields['rpms']:
             rpm_obj = find_rpm(rpm['name'], rpm['version'], rpm['repo'])
             if not rpm_obj:
                 insert_rpm(rpm['name'], rpm['version'], rpm['repo'])
             # also need to add an ami-rpm relationship regardless
-            insert_ami_rpm_relation(aws_image_id, aws_region, rpm['name'], rpm['version'], rpm['repo'])
+            save_ami_to_db_rpm_relation(aws_image_id, aws_region, rpm['name'], rpm['version'], rpm['repo'])
 
 #-----------------------------------------------------------------------------------------------
 # Lambda-specific Functions
@@ -157,7 +157,7 @@ def handler(event, context):
             raise ValueError('Invalid input - body must contain AMI mandatory attributes')
         input_fields = validate_ami_fields(json.loads(event['body']))
 
-        insert_ami(aws_image_id, aws_region, input_fields)
+        save_ami_to_db(aws_image_id, aws_region, input_fields)
         output = {
             # 'event': event,
             # 'db_response': response,
@@ -187,7 +187,7 @@ if __name__ == "__main__":
             "X-Forwarded-Proto": "https"
         },
         "pathParameters": {
-            "aws_image_id": "ami-00040008",
+            "aws_image_id": "ami-00070008",
             "aws_region": "us-east-1"
         },
         "requestContext": {
