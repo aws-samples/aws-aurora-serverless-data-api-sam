@@ -1,12 +1,12 @@
 ## Intro
 
-CM-DB is ...
+CM-DB is a solution built by Symantec and AWS that will allow Symantec to continuously track an AMI's lifecycle and gain insights on the AMI CI/CD workflow for ESS. The solution comprises of injection points added to ESS's AMI CI/CD workflow and a back-end REST API (API Gateway+Lambda+Aurora) that will be called by those injection points to store AMI-lifecycle-related events. The API can also be used for querying purposes.
 
 ## Deploying the Solution
 
 First things first. Make sure you have properly set up AWS credentials in the workstation that will trigger the deployment of CM-DB on AWS. Credentials are typically placed under `~/.aws/credentials` or `~/.aws/config`. The credentials you're using should have "enough" privileges to provision all required services.
 
-In order to deploy the solution to an AWS account a configuration file needs to be edited w/ account-specific resources. A sample file is provided called C`deploy_scripts/marcilio-dev-env.sh`. That file is used to deploy the solution to Marcilio's AWS account. Copy and paste that file into another file, say `cmdb-dev-env.sh` (it might already exist, so skip this step if so).
+In order to deploy CM-DB to an AWS account a configuration file needs to be edited w/ account-specific resources. A sample file is provided called C`deploy_scripts/marcilio-dev-env.sh`. That file is used to deploy the solution to Marcilio's AWS account. Copy and paste that file into another file, say `cmdb-dev-env.sh` (it might already exist, so skip this step if so).
 
 ```bash
 # from the project root directory
