@@ -96,7 +96,7 @@ class DataAccessLayer:
         for ami_obj in amis:
             # find ami-rpm relations and add rpms to returned ami object
             ami_rpm_relations = self._find_ami_rpm_relations(aws_image_id, aws_region)
-            ami_obj['rpms'] = [self.find_rpm(r['rpm_name'], r['rpm_version'], r['rpm_repo'])[0] for r in ami_rpm_relations]
+            ami_obj['rpms'] = [ {'rpm_name': rpm['rpm_name'], 'rpm_version': rpm['rpm_version'], 'rpm_repo': rpm['rpm_repo']} for rpm in ami_rpm_relations]
         return amis
 
     def save_ami(self, aws_image_id, aws_region, input_fields):

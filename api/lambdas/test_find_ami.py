@@ -19,7 +19,7 @@ if __name__ == "__main__":
             "X-Forwarded-Proto": "https"
         },
         "pathParameters": {
-            "aws_image_id": "ami-22222222",
+            "aws_image_id": "ami-0086ba4cdeb4384d6",
             "aws_region": "us-east-1"
         },
         "requestContext": {
