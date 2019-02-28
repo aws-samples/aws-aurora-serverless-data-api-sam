@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Provisions CM-DB APIs Aurora RDS database
+Parameters:
+  AppName:
+    Description: "Application Name"
+    Type: String
+    Default: cmdb
+  EnvType:
+    Description: "Environment type (eg, dev, qa, prod)"
+    Type: String
+    Default: dev
+  DBClusterName:
+    Description: "Aurora RDS database name"
+    Type: String
+    Default: esscmdb
+  DBMasterUserName:
+    AllowedPattern: "[a-zA-Z0-9_]+"
+    ConstraintDescription: must be between 1 to 16 alphanumeric characters.
+    Description: The database admin account user name, between 1 to 16 alphanumeric characters.
+    MaxLength: '16'
+    MinLength: '1'
+    Type: String
+    Default: ess_user_dev
+  DBMasterUserPassword:
+    AllowedPattern: "[a-zA-Z0-9!#@%]+"
+    ConstraintDescription: must be between 8 to 41 alphanumeric characters.
+    Description: The database admin account password, between 8 to 41 alphanumeric characters.
+    MaxLength: '41'
+    MinLength: '8'
+    NoEcho: 'true'
+    Type: String
+    Default: 12345678!  # remove default password
+  DBSubnetList:
+    Description: "List of exactly 3 subnets for the Aurora RDS cluster"
+    Type: List<AWS::EC2::Subnet::Id> 
+  # DBVPCSecurityGroupId:
+  #   Description: "Optional Aurora RDS VPC security group id"
+  #   Type: AWS::EC2::SecurityGroup::Id
+  #   Default: None
+Resources:
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: CloudFormation managed DB subnet group.
+      SubnetIds:
+        - !Select [0, !Ref DBSubnetList ]
+        - !Select [1, !Ref DBSubnetList ]
+        - !Select [2, !Ref DBSubnetList ]
+  RDSCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      MasterUsername: 
+        Ref: DBMasterUserName
+      MasterUserPassword: 
+        Ref: DBMasterUserPassword
+      DatabaseName: !Ref DBClusterName
+      Engine: aurora
+      EngineMode: serverless
+      EngineVersion: 5.6.10a
+      ScalingConfiguration:
+        AutoPause: true
+        MaxCapacity: 2
+        MinCapacity: 2
+        SecondsUntilAutoPause: 3600 # 1 hour
+      DBSubnetGroupName:
+        Ref: DBSubnetGroup
+      DeletionProtection: false  # we can change this to 'true' to prevent accidental deletions
+      # VpcSecurityGroupIds:
+      #   - !Ref DBVPCSecurityGroupId
+Outputs:
+  StackName:
+    Description: Aurora Stack Name
+    Value: !Ref AWS::StackName
+    Export:
+      Name: !Sub ${AWS::StackName}-Name
+
+  AuroraClusterId:
+    Description: Aurora Cluster ID
+    Value: !Ref RDSCluster
+    Export:
+      Name: !Sub ${AWS::StackName}-AuroraClusterID
+
+  AuroraDbURL:
+    Description: Aurora Database URL
+    Value: !GetAtt RDSCluster.Endpoint.Address
+    Export:
+      Name: !Sub ${AWS::StackName}-DatabaseURL
+
+  DBMasterUserName:
+    Description: RDS Database admin account user
+    Value: !Ref DBMasterUserName
+    Export:
+      Name: !Sub ${AWS::StackName}-DatabaseUser
+
+      Name: !Sub ${AWS::StackName}-DatabaseAlarmTopicName    

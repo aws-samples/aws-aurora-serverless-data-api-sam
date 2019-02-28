@@ -53,10 +53,23 @@ class DataAccessLayer:
         response = self.execute_sql(sql)
         return self._build_object_from_db_response(response)
 
-    def save_rpm(self, name, version, repo):
-        sql = f'insert into {rpm_table_name} (name, version, repo) values ("{name}","{version}","{repo}")'
+    def save_rpm(self, name, version, repo, ignore_key_conflict=True):
+        ignore = 'ignore' if ignore_key_conflict else ''
+        sql = f'insert {ignore} into {rpm_table_name} (name, version, repo) values ("{name}","{version}","{repo}")'
         response = self.execute_sql(sql)
         return response
+
+    def save_rpms_batch(self, rpm_list, batch_size=200, ignore_key_conflict=True):
+        ignore = 'ignore' if ignore_key_conflict else ''
+        sql_stmt = ''
+        for idx, rpm in enumerate(rpm_list):
+            rpm_sql = f'insert {ignore} into {rpm_table_name} (name, version, repo) values ("{rpm["name"]}","{rpm["version"]}","{rpm["repo"]}")'
+            sql_stmt = f'{rpm_sql};{sql_stmt}'
+            if (1+idx) % batch_size == 0:
+                self.execute_sql(sql_stmt)
+                sql_stmt = ''
+        if len(sql_stmt) > 0:
+            self.execute_sql(sql_stmt)
 
     #-----------------------------------------------------------------------------------------------
     # AMI-RPM Functions
@@ -70,6 +83,18 @@ class DataAccessLayer:
         sql = f'insert into {ami_rpm_table_name} (aws_image_id, aws_region, rpm_name, rpm_version, rpm_repo) values ("{aws_image_id}", "{aws_region}", "{rpm_name}", "{rpm_version}", "{rpm_repo}")'
         response = self.execute_sql(sql)
         return response
+
+    def _save_ami_rpm_relations_batch(self, aws_image_id, aws_region, rpm_list, batch_size=200, ignore_key_conflict=True):
+        ignore = 'ignore' if ignore_key_conflict else ''
+        sql_stmt = ''
+        for idx, rpm in enumerate(rpm_list):
+            relation_sql = f'insert {ignore} into {ami_rpm_table_name} (aws_image_id, aws_region, rpm_name, rpm_version, rpm_repo) values ("{aws_image_id}", "{aws_region}", "{rpm["name"]}","{rpm["version"]}","{rpm["repo"]}")'
+            sql_stmt = f'{relation_sql};{sql_stmt}'
+            if (1+idx) % batch_size == 0:
+                self.execute_sql(sql_stmt)
+                sql_stmt = ''
+        if len(sql_stmt) > 0:
+            self.execute_sql(sql_stmt)
 
     #-----------------------------------------------------------------------------------------------
     # AMI Functions
@@ -105,15 +130,8 @@ class DataAccessLayer:
         ami_fields.pop('rpms')
         ami_record = self._build_ami_record(aws_image_id, aws_region, ami_fields)
         sql_stmt = self._build_ami_insert_sql_statement(ami_record)
-        # insert ami record in db
         response = self.execute_sql(sql_stmt)
-
-        # we might have to add rpms if they're new...
         if 'rpms' in input_fields:
-            for rpm in input_fields['rpms']:
-                rpm_obj = self.find_rpm(rpm['name'], rpm['version'], rpm['repo'])
-                if not rpm_obj:
-                    self.save_rpm(rpm['name'], rpm['version'], rpm['repo'])
-                # also need to add an ami-rpm relationship regardless
-                self._save_ami_rpm_relation(aws_image_id, aws_region, rpm['name'], rpm['version'], rpm['repo'])        
+            self.save_rpms_batch(input_fields['rpms'])
+            self._save_ami_rpm_relations_batch(aws_image_id, aws_region, input_fields['rpms'] )
 

@@ -26,8 +26,6 @@ def handler(event, context):
         aws_image_id, aws_region = validate_ami_path_parameters(event)
         list_amis = dal.find_ami(aws_image_id, aws_region)
         output = {
-            # 'event': event,
-            # 'db_response': response
             'record': list_amis[0] if len(list_amis) > 0 else {},
             'record_found': len(list_amis) > 0
         }
