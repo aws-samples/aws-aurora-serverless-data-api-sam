@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Creates a Step Functions state machine to copy S3 files from a source bucket/path to a target bucket/path based on file types (eg, mp4, jpg)
+Description: Provisions CM-DB APIs and Lambda resources
 Transform: 'AWS::Serverless-2016-10-31'
 Parameters:
   AppName:

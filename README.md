@@ -2,6 +2,31 @@
 
 CM-DB is a solution built by Symantec and AWS that will allow Symantec to continuously track an AMI's lifecycle and gain insights on the AMI CI/CD workflow for ESS. The solution comprises of injection points added to ESS's AMI CI/CD workflow and a back-end REST API (API Gateway+Lambda+Aurora) that will be called by those injection points to store AMI-lifecycle-related events. The API can also be used for querying purposes.
 
+## Python environment
+
+Install ```pipenv``` (https://pipenv.readthedocs.io/en/latest/)
+
+Eg, on Mac OS:
+
+```
+brew install pipenv
+```
+
+Then create the Python virtual environment and install the dependencies:
+
+```
+cd api/lambdas
+pipenv --python 3.6
+pipenv shell
+pipenv install (this will read the Pipfile file to locate and install dependencies)
+```
+
+To know where the virtual environments and the dependencies are installed type this:
+
+```
+pipenv --venv
+```
+
 ## Deploying the Solution
 
 First things first. Make sure you have properly set up AWS credentials in the workstation that will trigger the deployment of CM-DB on AWS. Credentials are typically placed under `~/.aws/credentials` or `~/.aws/config`. The credentials you're using should have "enough" privileges to provision all required services.
