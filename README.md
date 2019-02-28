@@ -212,9 +212,74 @@ GET: /ami?cm_state=IN_SI
 GET: /ami/{ami-id-region}/event?start=YYYYMMDDHmmmSS&end=YYYYMMDDHmmmSS
 ```
 
-## Injection Points (examples)
+## How to create a new API
 
-TODO
+Let's say we need to create a new API to search all AMIs that reference a given RPM (name/version/repo).
+
+First, we define now we want the API to look like, eg:
+
+```GET /ami?rpm_name='rpm-1'&rpm_version='v1'&rpm_repo='repo-1'```
+
+Notice that the API is generic, ie, it can search arbitrary fields on AMIs and hence can be used for other use cases.
+
+Then we add the infrastructure as code piece to create the API resources on AWS via CloudFormation. 
+
+```
+cd api/deploy_scripts/
+vi cfn_template.yaml
+```
+
+We add a new Lambda function in the CloudFormation template for our API. Let's calls the Lambda function ```SearchAMIsLambda```. This Lambda 
+
+```
+  SearchAMIsLambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Description: Search AMIs on CM-DB
+      FunctionName: !Sub "${EnvType}-${AppName}-search-ami-lambda"
+      Handler: search_ami.handler
+      CodeUri: ../lambdas/
+      Events:
+        AMIPost:
+          Type: Api
+          Properties:
+            Path: '/ami'
+            Method: get
+      Policies:
+        - Version: '2012-10-17' # Policy Document
+          Statement:
+            - Effect: Allow
+              Action:
+                - rds-data:ExecuteSql
+                - secretsmanager:GetSecretValue
+              Resource: '*'
+```
+
+Now we're able to deploy a new API on AWS but the Lambda code is not there yet. If you noticed, the new Lambda we just added to the Cloudformation template ```SearchAMIsLambda``` refers to a Python source code file named ```search_ami```. We need to create that file (```search_ami.py```) and add an entrypoint function called ```handler``` to it. We can likely copy/paste an existing Lambda code to make things easier.
+
+New Lambda source code file: ```api/lambdas/search_ami.py```
+
+```
+#-----------------------------------------------------------------------------------------------
+# Lambda Entrypoint
+#-----------------------------------------------------------------------------------------------
+def handler(event, context):
+    print(f'Event received: {event}')
+    try:
+
+        # TODO: Validate input parameters
+
+        # TODO: call dal object (DataAccessLayer) to search AMIs
+
+        # TODO: generate output
+
+        return success(output)
+    except Exception as e:
+        print(f'Error: {e}')
+        return error(400, str(e)) 
+```
+
+You can create a test file to test your Lambda function locally. Take a look at test files for other Lambda functions (```test_find_ami.py``` and ```test_register_ami.py```).
 
 ## TODO
 - API (POST: ami/): support RPMs as input
