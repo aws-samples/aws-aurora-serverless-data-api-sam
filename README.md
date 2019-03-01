@@ -38,6 +38,19 @@ First things first. Make sure you have properly set up AWS credentials in the wo
 3) Create a Cloudformation stack for the DB using the template in ```db/deploy_scripts/cfn_template.yaml```
 4) Take note of the output parameters (you'll need them later)
 
+### Creating the CM-DB Database entities (database and tables)
+
+DB DDL statements are available in plain text at ```db/ddl_scripts```.
+
+1) Log on the AWS Console
+2) Open the RDS Console
+3) Click on 'Query Editor' (on the left)
+4) Choose the CM-DB database and credentials
+5) Once the query editor opens clear its contents
+6) Copy all content from file ```db/dll_scripts/create_db_and_tables.txt``` in the query editor
+7) Click 'Run'
+
+
 ### Deploying the CM-DB API
 
 In order to deploy CM-DB to an AWS account a configuration file needs to be edited w/ account-specific resources. A sample file is provided called C`deploy_scripts/marcilio-dev-env.sh`. That file is used to deploy the solution to Marcilio's AWS account. Copy and paste that file into another file, say `cmdb-dev-env.sh` (it might already exist, so skip this step if so).

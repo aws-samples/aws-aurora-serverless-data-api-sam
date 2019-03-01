@@ -12,7 +12,7 @@ Parameters:
   DBClusterName:
     Description: "Aurora RDS database name"
     Type: String
-    Default: ess-cmdb
+    Default: ess_cmdb
   DBMasterUserName:
     AllowedPattern: "[a-zA-Z0-9_]+"
     ConstraintDescription: must be between 1 to 16 alphanumeric characters.

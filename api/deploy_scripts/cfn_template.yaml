@@ -13,7 +13,7 @@ Parameters:
   DBName:
     Description: "RDS Database Name"
     Type: String
-    Default: ess-cmdb
+    Default: ess_cmdb
   DBClusterARN:
     Description: "RDS Database cluster ARN"
     Type: String
