@@ -35,7 +35,8 @@ First things first. Make sure you have properly set up AWS credentials in the wo
 
 1) Log on the AWS Console for the account you want to the deploy CM-DB database
 2) Navigate to the Cloudformation Console
-3) Create a new stack using template ```db/deploy_scripts/cfn_template.yaml```
+3) Create a Cloudformation stack for the DB using the template in ```db/deploy_scripts/cfn_template.yaml```
+4) Take note of the output parameters (you'll need them later)
 
 ### Deploying the CM-DB API
 
@@ -47,7 +48,25 @@ cd api/deploy_scripts/
 cp marcilio-dev-env.sh cmdb-dev-env.sh
 ```
 
-Open the newly created file `cmdb-dev-env.sh` and look at some of its environment variables. Notice that there's a reference to a S3 bucket through variable ``s3_bucket_deployment_artifacts`` that will store deployment artifacts. Enter a valid S3 bucket for the account you're deploying the solution to. The `env_type` variable will be used to prefix every resource deployed in the cloud. For instance, if `env_type=john` every resouce will be prefixed by `john`, eg, john-lambda-function-X. `env_type` typically represents a deployment environment such as `dev`, `qa`, or `prod` but it can also hold arbitrary values.
+Open the newly created file `cmdb-dev-env.sh` and look at some of its environment variables. 
+
+Update the following environment variables for your AWS account:
+
+```bash
+# All resources deployed (eg, API, Lambdas) will be prefix w/ the env type (eg, dev-register-ami-lambda)
+export env_type="dev"
+# S3 bucket to store packaged Lambdas
+export s3_bucket_deployment_artifacts="replace w/ your s3 bucket"
+# RDS database name
+export db_name="replace w/ the database name"
+# RDS database cluster ARN
+export db_cluster_arn="replace w/ the db cluster arn"
+# ARN of secrets manager secret that stores the RDS user and password
+export db_cred_secrets_store_arn="replace w/ the secrets store secret arn"
+# ---------------------------------------------------------------
+```
+
+The ```db_cluster_arn``` and ```db_cred_secrets_store_arn``` values come from step #4 from the 'Deploying the CM-DB Database' step you did previously (see above).
 
 Once the configuration file is updated you're ready to deploy CM-DB into your account like this:
 
