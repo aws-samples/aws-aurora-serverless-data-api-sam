@@ -1,0 +1,64 @@
+
+CREATE DATABASE ess_cmdb;
+
+USE ess_cmdb;
+
+CREATE TABLE IF NOT EXISTS ess_cmdb.ami (
+    aws_image_id VARCHAR(255) NOT NULL,
+    aws_region VARCHAR(30) NOT NULL,
+    aws_account VARCHAR(13) NOT NULL,
+    image_type VARCHAR(255) NOT NULL, 
+    server_type VARCHAR(255),
+    base_os VARCHAR(255),
+    aws_root_ami_id VARCHAR(255),
+    aws_root_ami_region VARCHAR(30),
+    release_version VARCHAR(50),
+    ansible_playbook_label VARCHAR(255),
+    cm_state VARCHAR(255) NOT NULL,
+    jenkins_info VARCHAR(255),
+    creation_date_utc DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (aws_image_id, aws_region),
+    INDEX image_type_idx (image_type),
+    INDEX server_type_idx (server_type),
+    INDEX base_os_idx (base_os),
+    INDEX aws_root_ami_id_idx (aws_root_ami_id),
+    INDEX release_version_idx (release_version),
+    INDEX cm_state_idx (cm_state),
+    INDEX creation_date_utc_idx (creation_date_utc)
+);
+
+CREATE TABLE IF NOT EXISTS ess_cmdb.ami_events (
+    event_id VARCHAR(255) NOT NULL,
+    aws_image_id VARCHAR(255) NOT NULL,
+    aws_region VARCHAR(30) NOT NULL,
+    event_timestamp_utc TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    event_type VARCHAR(255),
+    event_data VARCHAR(2000),
+    user_agent VARCHAR(255),
+    PRIMARY KEY (event_id),
+    FOREIGN KEY (aws_image_id, aws_region)
+      REFERENCES ami(aws_image_id, aws_region)
+      ON DELETE RESTRICT,
+    INDEX image_timestamp_idx (aws_image_id, aws_region, event_timestamp_utc)
+);
+
+CREATE TABLE IF NOT EXISTS ess_cmdb.rpm (
+    name VARCHAR(255) NOT NULL,
+    version VARCHAR(50) NOT NULL,
+    repo VARCHAR(50) NOT NULL,
+    PRIMARY KEY (name, version, repo)
+);
+
+CREATE TABLE IF NOT EXISTS ess_cmdb.ami_rpm (
+    aws_image_id VARCHAR(255) NOT NULL,
+    aws_region VARCHAR(30) NOT NULL,
+    rpm_name VARCHAR(255) NOT NULL,
+    rpm_version VARCHAR(255) NOT NULL,
+    rpm_repo VARCHAR(255) NOT NULL,
+    FOREIGN KEY (aws_image_id, aws_region)
+      REFERENCES ami(aws_image_id, aws_region)
+      ON DELETE CASCADE,
+    FOREIGN KEY (rpm_name, rpm_version, rpm_repo)
+      REFERENCES rpm(name, version, repo)
+      ON DELETE CASCADE
+);
