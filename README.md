@@ -396,11 +396,3 @@ def handler(event, context):
 
 You can create a test file to test your Lambda function locally. Take a look at test files for other Lambda functions (```test_find_ami.py``` and ```test_register_ami.py```).
 
-## TODO
-- API (POST: ami/): support RPMs as input
-- API (GET: ami/): return AMI and RPMs
-- API: allow updating the AMI state
-- Pass db_credentials_secrets_store_arn, database_name, and db_cluster_arn to Lambda functions
-- IaC: Cloudformation (YAML) for Aurora DB/Secrets Manager
-- IaC: Cloudformation (YAML) for API/Lambda
-- IaC: Automate: DB credentials in Secrets Manager
