@@ -29,6 +29,9 @@ pack_dist_dir="${pack_root_dir}/dist"
     --parameter-overrides \
         ProjectName="$app_name" \
         EnvType="$env_type" \
+        DBName="$db_name" \
+        DBClusterARN="$db_cluster_arn" \
+        DBCredSecretsStoresArn="$db_cred_secrets_store_arn" \
     --capabilities \
         CAPABILITY_IAM
 )

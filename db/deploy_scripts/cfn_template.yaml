@@ -12,7 +12,7 @@ Parameters:
   DBClusterName:
     Description: "Aurora RDS database name"
     Type: String
-    Default: esscmdb
+    Default: ess-cmdb
   DBMasterUserName:
     AllowedPattern: "[a-zA-Z0-9_]+"
     ConstraintDescription: must be between 1 to 16 alphanumeric characters.
@@ -29,7 +29,6 @@ Parameters:
     MinLength: '8'
     NoEcho: 'true'
     Type: String
-    Default: 12345678!  # remove default password
   DBSubnetList:
     Description: "List of exactly 3 subnets for the Aurora RDS cluster"
     Type: List<AWS::EC2::Subnet::Id> 

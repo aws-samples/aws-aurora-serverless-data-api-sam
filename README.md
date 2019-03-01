@@ -31,6 +31,14 @@ pipenv --venv
 
 First things first. Make sure you have properly set up AWS credentials in the workstation that will trigger the deployment of CM-DB on AWS. Credentials are typically placed under `~/.aws/credentials` or `~/.aws/config`. The credentials you're using should have "enough" privileges to provision all required services.
 
+### Deploying the CM-DB Database
+
+1) Log on the AWS Console for the account you want to the deploy CM-DB database
+2) Navigate to the Cloudformation Console
+3) Create a new stack using template ```db/deploy_scripts/cfn_template.yaml```
+
+### Deploying the CM-DB API
+
 In order to deploy CM-DB to an AWS account a configuration file needs to be edited w/ account-specific resources. A sample file is provided called C`deploy_scripts/marcilio-dev-env.sh`. That file is used to deploy the solution to Marcilio's AWS account. Copy and paste that file into another file, say `cmdb-dev-env.sh` (it might already exist, so skip this step if so).
 
 ```bash
@@ -43,7 +51,11 @@ Open the newly created file `cmdb-dev-env.sh` and look at some of its environmen
 
 Once the configuration file is updated you're ready to deploy CM-DB into your account like this:
 
-`./deploy_scripts/package.sh cmdb-dev && ./deploy_scripts/deploy.sh cmdb-dev`
+```bash
+# from the project's root directory
+cd api/
+./deploy_scripts/package.sh cmdb-dev && ./deploy_scripts/deploy.sh cmdb-dev
+```
 
 Notice that we only specify the prefix of the file `cmdb-dev` not the full file name.
 
