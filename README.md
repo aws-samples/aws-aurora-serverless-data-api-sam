@@ -15,7 +15,7 @@ brew install pipenv
 Then create the Python virtual environment and install the dependencies:
 
 ```
-cd api/lambdas
+cd api/
 pipenv --python 3.6
 pipenv shell
 pipenv install (this will read the Pipfile file to locate and install dependencies)
@@ -47,7 +47,53 @@ Once the configuration file is updated you're ready to deploy CM-DB into your ac
 
 Notice that we only specify the prefix of the file `cmdb-dev` not the full file name.
 
-## APIs (Draft)
+## Securing the API via API Keys
+
+### Enable API Key for the API
+
+1) Navigate to the AWS Console
+2) Then open the API Gateway Console
+3) Select the CM-DB API on the left
+4) Click 'Resources'
+5) Then click on an HTTP method of an API (eg, GET, POST)
+6) Click on Method Request
+7) Click on "API Key Required"
+8) Repeat steps 6 and 7 for all API method that require an API key protection
+
+### Create an API Key for the API
+1) Click on API Keys on the left pane of the API Gateway Console
+2) Click Actions then Create API Key
+3) Give it a name to the API key (eg, cm-db-api-key)
+4) Hit Save 
+5) Hit "Show" near the API Key to reveal the API key (take note of that!)
+
+### Create a Usage Plan
+
+1) Click on Usage Plan on the left pane of the API Gateway Console
+2) Click on Usage Plans and 'Create'
+3) Give a name to your usage plan (eg, cm-db-basic-plan)
+4) You might want to ignore Throttling and Quota for now (unclick the checkboxes)
+5) Then click "Add API stage"
+6) Choose the CM-DB API and the Prod stage (or other stages available)
+7) Click the 'check' mark on the right
+8) Click "next"
+9) Click "Add API key to usage plan"
+10) Type the API key name your created in the previous step (eg, cm-db-api-key)
+11) Click the 'check' mark on the right
+12) Click "Done"
+
+### Using API keys on the client side
+
+When making an HTTP request to the CM-DB API add the API key header like this:
+
+HTTP HEADER
+```
+x-api-key: [replace w/ the api key value from step 5 of 'Create an API Key for the API']
+```
+
+Call your APIs and be happy :)
+
+## APIs
 
 
 ### Register new AMI on CM-DB (Done)

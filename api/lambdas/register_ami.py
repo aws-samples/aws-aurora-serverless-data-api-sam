@@ -59,8 +59,6 @@ def handler(event, context):
 
         dal.save_ami(aws_image_id, aws_region, input_fields)
         output = {
-            # 'event': event,
-            # 'db_response': response,
             'new_record': input_fields
         }
         return success(output)

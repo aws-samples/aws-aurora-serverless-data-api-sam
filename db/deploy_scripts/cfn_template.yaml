@@ -49,6 +49,7 @@ Resources:
   RDSCluster:
     Type: AWS::RDS::DBCluster
     Properties:
+      DBClusterIdentifier: !Ref DBClusterName
       MasterUsername: 
         Ref: DBMasterUserName
       MasterUserPassword: 
@@ -64,7 +65,7 @@ Resources:
         SecondsUntilAutoPause: 3600 # 1 hour
       DBSubnetGroupName:
         Ref: DBSubnetGroup
-      DeletionProtection: false  # we can change this to 'true' to prevent accidental deletions
+      DeletionProtection: false  # change this to 'true' to prevent accidental deletions
       # VpcSecurityGroupIds:
       #   - !Ref DBVPCSecurityGroupId
 Outputs:
@@ -80,6 +81,12 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-AuroraClusterID
 
+  AuroraClusterArn:
+    Description: Aurora Cluster ARN
+    Value: !Sub arn:aws:rds:${AWS::Region}:${AWS::AccountId}:cluster:${DBClusterName}
+    Export:
+      Name: !Sub ${AWS::StackName}-AuroraClusterARN
+
   AuroraDbURL:
     Description: Aurora Database URL
     Value: !GetAtt RDSCluster.Endpoint.Address
@@ -91,5 +98,3 @@ Outputs:
     Value: !Ref DBMasterUserName
     Export:
       Name: !Sub ${AWS::StackName}-DatabaseUser
-
-      Name: !Sub ${AWS::StackName}-DatabaseAlarmTopicName    
