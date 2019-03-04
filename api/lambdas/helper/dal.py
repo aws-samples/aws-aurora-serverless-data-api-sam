@@ -1,7 +1,5 @@
 #-----------------------------------------------------------------------------------------------
 # Data Access Layer
-# - Contains a data access layer class that interfaces with CM-DB to store and query entities
-#   such as AMIs, AMI events, and RPMs
 #-----------------------------------------------------------------------------------------------
 
 import boto3
@@ -10,9 +8,9 @@ import os
 
 client = boto3.client('rds-data')
 
-ami_table_name = os.getenv('AMI_TABLE_NAME', 'ami')
-rpm_table_name = os.getenv('RPM_TABLE_NAME', 'rpm')
-ami_rpm_table_name = os.getenv('AMI_RPM_TABLE_NAME', 'ami_rpm')
+ec2_table_name = os.getenv('EC2_TABLE_NAME', 'ec2')
+package_table_name = os.getenv('PACKAGE_TABLE_NAME', 'package')
+ec2_package_table_name = os.getenv('EC2_PACKAGE_TABLE_NAME', 'ec2_package')
 
 class DataAccessLayer:
 
@@ -46,25 +44,25 @@ class DataAccessLayer:
         return list_objs
 
     #-----------------------------------------------------------------------------------------------
-    # RPM Functions
+    # Package Functions
     #-----------------------------------------------------------------------------------------------
-    def find_rpm(self, name, version, repo):
-        sql = f'select * from {rpm_table_name} where name="{name}" and version="{version}" and repo="{repo}"'
+    def find_package(self, name, version, repo):
+        sql = f'select * from {package_table_name} where name="{name}" and version="{version}" and repo="{repo}"'
         response = self.execute_sql(sql)
         return self._build_object_from_db_response(response)
 
-    def save_rpm(self, name, version, repo, ignore_key_conflict=True):
+    def save_package(self, name, version, repo, ignore_key_conflict=True):
         ignore = 'ignore' if ignore_key_conflict else ''
-        sql = f'insert {ignore} into {rpm_table_name} (name, version, repo) values ("{name}","{version}","{repo}")'
+        sql = f'insert {ignore} into {package_table_name} (name, version, repo) values ("{name}","{version}","{repo}")'
         response = self.execute_sql(sql)
         return response
 
-    def save_rpms_batch(self, rpm_list, batch_size=200, ignore_key_conflict=True):
+    def save_packages_batch(self, package_list, batch_size=200, ignore_key_conflict=True):
         ignore = 'ignore' if ignore_key_conflict else ''
         sql_stmt = ''
-        for idx, rpm in enumerate(rpm_list):
-            rpm_sql = f'insert {ignore} into {rpm_table_name} (name, version, repo) values ("{rpm["name"]}","{rpm["version"]}","{rpm["repo"]}")'
-            sql_stmt = f'{rpm_sql};{sql_stmt}'
+        for idx, package in enumerate(package_list):
+            package_sql = f'insert {ignore} into {package_table_name} (name, version, repo) values ("{package["name"]}","{package["version"]}","{package["repo"]}")'
+            sql_stmt = f'{package_sql};{sql_stmt}'
             if (1+idx) % batch_size == 0:
                 self.execute_sql(sql_stmt)
                 sql_stmt = ''
@@ -72,23 +70,23 @@ class DataAccessLayer:
             self.execute_sql(sql_stmt)
 
     #-----------------------------------------------------------------------------------------------
-    # AMI-RPM Functions
+    # EC2-PACKAGE Functions
     #-----------------------------------------------------------------------------------------------
-    def _find_ami_rpm_relations(self, aws_image_id, aws_region):
-        sql = f'select * from {ami_rpm_table_name} where aws_image_id="{aws_image_id}" and aws_region="{aws_region}"'
+    def _find_ec2_package_relations(self, aws_image_id, aws_region):
+        sql = f'select * from {ec2_package_table_name} where aws_image_id="{aws_image_id}" and aws_region="{aws_region}"'
         response = self.execute_sql(sql)
         return self._build_object_from_db_response(response)
 
-    def _save_ami_rpm_relation(self, aws_image_id, aws_region, rpm_name, rpm_version, rpm_repo):
-        sql = f'insert into {ami_rpm_table_name} (aws_image_id, aws_region, rpm_name, rpm_version, rpm_repo) values ("{aws_image_id}", "{aws_region}", "{rpm_name}", "{rpm_version}", "{rpm_repo}")'
+    def _save_ec2_package_relation(self, aws_image_id, aws_region, package_name, package_version, package_repo):
+        sql = f'insert into {ec2_package_table_name} (aws_image_id, aws_region, package_name, package_version, package_repo) values ("{aws_image_id}", "{aws_region}", "{package_name}", "{package_version}", "{package_repo}")'
         response = self.execute_sql(sql)
         return response
 
-    def _save_ami_rpm_relations_batch(self, aws_image_id, aws_region, rpm_list, batch_size=200, ignore_key_conflict=True):
+    def _save_ec2_package_relations_batch(self, aws_image_id, aws_region, package_list, batch_size=200, ignore_key_conflict=True):
         ignore = 'ignore' if ignore_key_conflict else ''
         sql_stmt = ''
-        for idx, rpm in enumerate(rpm_list):
-            relation_sql = f'insert {ignore} into {ami_rpm_table_name} (aws_image_id, aws_region, rpm_name, rpm_version, rpm_repo) values ("{aws_image_id}", "{aws_region}", "{rpm["name"]}","{rpm["version"]}","{rpm["repo"]}")'
+        for idx, package in enumerate(package_list):
+            relation_sql = f'insert {ignore} into {ec2_package_table_name} (aws_image_id, aws_region, package_name, package_version, package_repo) values ("{aws_image_id}", "{aws_region}", "{package["name"]}","{package["version"]}","{package["repo"]}")'
             sql_stmt = f'{relation_sql};{sql_stmt}'
             if (1+idx) % batch_size == 0:
                 self.execute_sql(sql_stmt)
@@ -97,41 +95,41 @@ class DataAccessLayer:
             self.execute_sql(sql_stmt)
 
     #-----------------------------------------------------------------------------------------------
-    # AMI Functions
+    # EC2 Functions
     #-----------------------------------------------------------------------------------------------
-    def _build_ami_record(self, aws_image_id, aws_region, fields):
+    def _build_ec2_record(self, aws_image_id, aws_region, fields):
         record = fields.copy()
         record['aws_image_id'] =  aws_image_id
         record['aws_region'] = aws_region
         return record
 
-    def _build_ami_insert_sql_statement(self, record):
+    def _build_ec2_insert_sql_statement(self, record):
         sql = list()
-        sql.append(f'INSERT INTO {ami_table_name} (')
+        sql.append(f'INSERT INTO {ec2_table_name} (')
         sql.append(', '.join(record.keys()))
         sql.append(') VALUES (')
         sql.append(', '.join(f'"{v}"' for v in record.values()))
         sql.append(')')
         return ''.join(sql)
 
-    def find_ami(self, aws_image_id, aws_region):
-        sql = f'select * from {ami_table_name} where aws_image_id="{aws_image_id}" and aws_region="{aws_region}"'
+    def find_ec2(self, aws_image_id, aws_region):
+        sql = f'select * from {ec2_table_name} where aws_image_id="{aws_image_id}" and aws_region="{aws_region}"'
         response = self.execute_sql(sql)
-        amis = self._build_object_from_db_response(response)
-        for ami_obj in amis:
-            # find ami-rpm relations and add rpms to returned ami object
-            ami_rpm_relations = self._find_ami_rpm_relations(aws_image_id, aws_region)
-            ami_obj['rpms'] = [ {'rpm_name': rpm['rpm_name'], 'rpm_version': rpm['rpm_version'], 'rpm_repo': rpm['rpm_repo']} for rpm in ami_rpm_relations]
-        return amis
+        ec2s = self._build_object_from_db_response(response)
+        for ec2_obj in ec2s:
+            # find ec2-package relations and add packages to returned ec2 object
+            ec2_package_relations = self._find_ec2_package_relations(aws_image_id, aws_region)
+            ec2_obj['packages'] = [ {'package_name': package['package_name'], 'package_version': package['package_version'], 'package_repo': package['package_repo']} for package in ec2_package_relations]
+        return ec2s
 
-    def save_ami(self, aws_image_id, aws_region, input_fields):
-        # rpms have their own table, so remove it to construct the ami record
-        ami_fields = input_fields.copy()
-        ami_fields.pop('rpms')
-        ami_record = self._build_ami_record(aws_image_id, aws_region, ami_fields)
-        sql_stmt = self._build_ami_insert_sql_statement(ami_record)
+    def save_ec2(self, aws_image_id, aws_region, input_fields):
+        # packages have their own table, so remove it to construct the ec2 record
+        ec2_fields = input_fields.copy()
+        ec2_fields.pop('packages')
+        ec2_record = self._build_ec2_record(aws_image_id, aws_region, ec2_fields)
+        sql_stmt = self._build_ec2_insert_sql_statement(ec2_record)
         response = self.execute_sql(sql_stmt)
-        if 'rpms' in input_fields:
-            self.save_rpms_batch(input_fields['rpms'])
-            self._save_ami_rpm_relations_batch(aws_image_id, aws_region, input_fields['rpms'] )
+        if 'packages' in input_fields:
+            self.save_packages_batch(input_fields['packages'])
+            self._save_ec2_package_relations_batch(aws_image_id, aws_region, input_fields['packages'] )
 

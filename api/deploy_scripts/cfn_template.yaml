@@ -1,11 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Provisions CM-DB APIs and Lambda resources
+Description: Provisions AWS resources for the Simple EC2 Inventory sample solution on AWS
 Transform: 'AWS::Serverless-2016-10-31'
 Parameters:
   AppName:
     Description: "Application Name"
     Type: String
-    Default: cmdb
+    Default: simple-ec2-inventory
   EnvType:
     Description: "Environment type (eg, dev, qa, prod)"
     Type: String
@@ -13,29 +13,25 @@ Parameters:
   DBName:
     Description: "RDS Database Name"
     Type: String
-    Default: ess_cmdb
+    Default: ec2_inventory_db
   DBClusterARN:
     Description: "RDS Database cluster ARN"
     Type: String
   DBCredSecretsStoresArn:
     Description: "RDS Database admin credentials secrets store secret ARN"
     Type: String
-  AMITableName:
-    Description: "AMI Table name"
+  EC2TableName:
+    Description: "EC2 Table name"
     Type: String
-    Default: ami
-  RPMTableName:
-    Description: "RPM Table name"
+    Default: ec2
+  PackageTableName:
+    Description: "Package Table name"
     Type: String
-    Default: rpm
-  AMIRPMTableName:
-    Description: "AMI-RPM Table name"
+    Default: package
+  EC2PackageTableName:
+    Description: "EC2-Package Table name"
     Type: String
-    Default: ami_rpm
-  AMIEventsTableName:
-    Description: "AMI events Table name"
-    Type: String
-    Default: ami_events
+    Default: ec2_package
 Globals:
   Function:
     Runtime: python3.6
@@ -43,28 +39,27 @@ Globals:
     MemorySize: 256
     Environment:
       Variables:
-        AMI_TABLE_NAME: !Ref AMITableName
-        RPM_TABLE_NAME: !Ref RPMTableName
-        AMI_RPM_TABLE_NAME: !Ref AMIRPMTableName
-        AMI_EVENTS_TABLE_NAME: !Ref AMIEventsTableName
+        EC2_TABLE_NAME: !Ref EC2TableName
+        PACKAGE_TABLE_NAME: !Ref PackageTableName
+        EC2_PACKAGE_RPM_TABLE_NAME: !Ref EC2PackageTableName
         DB_NAME: !Ref DBName
         DB_CLUSTER_ARN: !Ref DBClusterARN
         DB_CRED_SECRETS_STORE_ARN: !Ref DBCredSecretsStoresArn
   Api:
     EndpointConfiguration: REGIONAL
 Resources:
-  RegisterAMILambda:
+  AddEC2InfoLambda:
     Type: 'AWS::Serverless::Function'
     Properties:
-      Description: Saves an AMI on CM-DB
-      FunctionName: !Sub "${EnvType}-${AppName}-register-ami-lambda"
-      Handler: register_ami.handler
+      Description: Adds EC2 info to the inventory
+      FunctionName: !Sub "${EnvType}-${AppName}-add-ec2-to-inventory-lambda"
+      Handler: add_ec2_info.handler
       CodeUri: ../lambdas/
       Events:
         AMIPost:
           Type: Api
           Properties:
-            Path: '/ami/{aws_image_id}/{aws_region}'
+            Path: '/ec2/{aws_instance_id}'
             Method: post
       Policies:
         - Version: '2012-10-17' # Policy Document
@@ -74,18 +69,18 @@ Resources:
                 - rds-data:ExecuteSql
                 - secretsmanager:GetSecretValue
               Resource: '*'
-  FindAMILambda:
+  GetEC2InfoLambda:
     Type: 'AWS::Serverless::Function'
     Properties:
-      Description: Find an AMI for a given ami-id and region
+      Description: Retrieves EC2 info from the inventory
       FunctionName: !Sub "${EnvType}-${AppName}-find-ami-lambda"
-      Handler: find_ami.handler
+      Handler: get_ec2_info.handler
       CodeUri: ../lambdas/
       Events:
         AMIPost:
           Type: Api
           Properties:
-            Path: '/ami/{aws_image_id}/{aws_region}'
+            Path: '/ami/{aws_instance_id}'
             Method: get
       Policies:
         - Version: '2012-10-17' # Policy Document
