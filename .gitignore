@@ -1,3 +1,4 @@
 api/lambdas/**/__pycache__/*
 /**/.DS_Store
 api/deploy_scripts/create_api_key.sh
+api/lambdas/apagme.py

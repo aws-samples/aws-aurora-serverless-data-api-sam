@@ -12,7 +12,9 @@ fi
 export env_type="dev"
 # S3 bucket to store packaged Lambdas
 export s3_bucket_deployment_artifacts="cmdb-us-east-1-665243897136"
-# RDS database name
+# RDS Cloudformation stack name
+export db_cfn_stack_name=""
+# RDS database name (a-zA-Z0-9_)
 export db_name="ess_cmdb"
 # RDS database cluster ARN
 export db_cluster_arn="arn:aws:rds:us-east-1:665243897136:cluster:${db_name}"

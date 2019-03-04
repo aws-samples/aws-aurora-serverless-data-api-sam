@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Provisions CM-DB APIs Aurora RDS database
+Description: Provision CM-DB's Aurora RDS database
 Parameters:
   AppName:
     Description: "Application Name"
@@ -10,6 +10,10 @@ Parameters:
     Type: String
     Default: dev
   DBClusterName:
+    Description: "Aurora RDS cluster name"
+    Type: String
+    Default: ess-cmdb
+  DatabaseName:
     Description: "Aurora RDS database name"
     Type: String
     Default: ess_cmdb
@@ -21,21 +25,9 @@ Parameters:
     MinLength: '1'
     Type: String
     Default: ess_user_dev
-  DBMasterUserPassword:
-    AllowedPattern: "[a-zA-Z0-9!#@%]+"
-    ConstraintDescription: must be between 8 to 41 alphanumeric characters.
-    Description: The database admin account password, between 8 to 41 alphanumeric characters.
-    MaxLength: '41'
-    MinLength: '8'
-    NoEcho: 'true'
-    Type: String
   DBSubnetList:
     Description: "List of exactly 3 subnets for the Aurora RDS cluster"
     Type: List<AWS::EC2::Subnet::Id> 
-  # DBVPCSecurityGroupId:
-  #   Description: "Optional Aurora RDS VPC security group id"
-  #   Type: AWS::EC2::SecurityGroup::Id
-  #   Default: None
 Resources:
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
@@ -45,15 +37,27 @@ Resources:
         - !Select [0, !Ref DBSubnetList ]
         - !Select [1, !Ref DBSubnetList ]
         - !Select [2, !Ref DBSubnetList ]
+  DBSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: CMDBUserSecret
+      Description: RDS database auto-generated user password
+      GenerateSecretString:
+        SecretStringTemplate: !Sub '{"username": "${DBMasterUserName}"}'
+        GenerateStringKey: "password"
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+      Tags:
+        -
+          Key: AppName
+          Value: !Ref AppName
   RDSCluster:
     Type: AWS::RDS::DBCluster
     Properties:
       DBClusterIdentifier: !Ref DBClusterName
-      MasterUsername: 
-        Ref: DBMasterUserName
-      MasterUserPassword: 
-        Ref: DBMasterUserPassword
-      DatabaseName: !Ref DBClusterName
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref DBSecret, ':SecretString:username}}' ]]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref DBSecret, ':SecretString:password}}' ]]
+      DatabaseName: !Ref DatabaseName
       Engine: aurora
       EngineMode: serverless
       EngineVersion: 5.6.10a
@@ -64,15 +68,18 @@ Resources:
         SecondsUntilAutoPause: 3600 # 1 hour
       DBSubnetGroupName:
         Ref: DBSubnetGroup
-      DeletionProtection: false  # change this to 'true' to prevent accidental deletions
-      # VpcSecurityGroupIds:
-      #   - !Ref DBVPCSecurityGroupId
 Outputs:
   StackName:
     Description: Aurora Stack Name
     Value: !Ref AWS::StackName
     Export:
       Name: !Sub ${AWS::StackName}-Name
+
+  DBSecretARN:
+    Description: Aurora Secret ARN
+    Value: !Ref DBSecret
+    Export:
+      Name: !Sub ${AWS::StackName}-SecretARN
 
   AuroraClusterId:
     Description: Aurora Cluster ID
