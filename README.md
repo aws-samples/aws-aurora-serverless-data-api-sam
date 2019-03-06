@@ -2,23 +2,24 @@
 
 Sample AWS solution showing how to use Amazon Aurora Serverless and the Data API as the backend of a Serverless SAM API (API Gateway + Lambda).
 
+## Required software
+
+* [AWS CLI](https://aws.amazon.com/cli/)
+* [Python 3.6](https://www.python.org/downloads/)
+* [Pipenv](https://pypi.org/project/pipenv/)
+
+Make sure you have set up AWS credentials (typically placed under `~/.aws/credentials` or `~/.aws/config`). The credentials you're using should have "enough" privileges to provision all required services. You'll know the exact definition of "enough" when you get "permission denied" errors :)
+
+
 ## Python environment
 
-Install ```pipenv``` (https://pipenv.readthedocs.io/en/latest/)
-
-Eg, on Mac OS:
+Create the Python virtual environment and install the dependencies:
 
 ```
-brew install pipenv
-```
-
-Then create the Python virtual environment and install the dependencies:
-
-```
-cd api/
+# from the project's root directory
 pipenv --python 3.6
-pipenv shell
-pipenv install (this will read the Pipfile file to locate and install dependencies)
+pipenv shell # enter the virtual environment
+pipenv install (this will use the provided Pipfile to install dependencies)
 ```
 
 To know where the virtual environments and the dependencies are installed type this:
@@ -29,77 +30,52 @@ pipenv --venv
 
 ## Deploying the Solution
 
-First things first. Make sure you have properly set up AWS credentials in the workstation that will trigger the deployment of CM-DB on AWS. Credentials are typically placed under `~/.aws/credentials` or `~/.aws/config`. The credentials you're using should have "enough" privileges to provision all required services.
-
 ### Deploying the Database
 
-1) Log on the AWS Console for the account you want to the deploy the database
-2) Navigate to the Cloudformation Console
-3) Create a Cloudformation stack for the DB using the template in ```db/deploy_scripts/cfn_template.yaml```
-4) Take note of the output parameters (you'll need them later)
+This uses the values from config file ```config-dev-env.sh```. 
+__Important__: This file will be used everywhere! Make sure you edit the file with config value for your AWS account!
+
+Now deploy the database resources like this (__important__: Notice that we only specify the prefix of the config file `config-dev` not the full file name).
+)
+
+```bash
+# from project's root directory
+./deploy_scripts/deploy_rds.sh config-dev
+```
 
 ### Creating the Database entities (database and tables)
 
-DB DDL statements are available in plain text at ```db/ddl_scripts```.
-
-1) Log on the AWS Console
-2) Open the RDS Console
-3) Click on 'Query Editor' (on the left)
-4) Choose the database you created and credentials
-5) Once the query editor opens clear its contents
-6) Copy all content from file ```db/dll_scripts/create_db_and_tables.txt``` in the query editor
-7) Click 'Run'
-
+```bash
+# from project's root directory
+cd deploy_scripts/ddl_scripts
+# run the script
+./create_schema.sh config-dev
+```
 
 ### Deploying the API
 
-In order to deploy CM-DB to an AWS account a configuration file needs to be edited w/ account-specific resources. A sample file is provided called C`deploy_scripts/marcilio-dev-env.sh`. That file is used to deploy the solution to Marcilio's AWS account. Copy and paste that file into another file, say `cmdb-dev-env.sh` (it might already exist, so skip this step if so).
-
-```bash
-# from the project root directory
-cd api/deploy_scripts/
-cp marcilio-dev-env.sh cmdb-dev-env.sh
-```
-
-Open the newly created file `cmdb-dev-env.sh` and look at some of its environment variables. 
-
-Update the following environment variables for your AWS account:
-
-```bash
-# All resources deployed (eg, API, Lambdas) will be prefix w/ the env type (eg, dev-register-ami-lambda)
-export env_type="dev"
-# S3 bucket to store packaged Lambdas
-export s3_bucket_deployment_artifacts="replace w/ your s3 bucket"
-# RDS database name
-export db_name="replace w/ the database name"
-# RDS database cluster ARN
-export db_cluster_arn="replace w/ the db cluster arn"
-# ARN of secrets manager secret that stores the RDS user and password
-export db_cred_secrets_store_arn="replace w/ the secrets store secret arn"
-# ---------------------------------------------------------------
-```
-
-The ```db_cluster_arn``` and ```db_cred_secrets_store_arn``` values come from step #4 from the 'Deploying the CM-DB Database' step you did previously (see above).
-
-Once the configuration file is updated you're ready to deploy CM-DB into your account like this:
-
 ```bash
 # from the project's root directory
-cd api/
-./deploy_scripts/package.sh cmdb-dev && ./deploy_scripts/deploy.sh cmdb-dev
+./deploy_scripts/package_api.sh config-dev && ./deploy_scripts/deploy_api.sh config-dev
 ```
 
 Notice that we only specify the prefix of the file `cmdb-dev` not the full file name.
 
 ## APIs
 
+You can use [Postman](https://www.getpostman.com/downloads/) or ```curl``` to test the APIs.
+
+Use the AWS Console to find out the API Endpoint for the stage named by variable ```api_stage_name``` in the ```config-dev-env.sh``` file.
 
 ### Add EC2 info to inventory
  
 #### Request
 
+POST: https://[Api-EndPoint]/ec2/{aws_instance_id}
+
+Example:
 ```
-POST: /ec2/{aws_instance_id}
+POST: /ec2/instance-002
 {
     "aws_region": "123456789012", 
     "aws_account": "123456789012",
@@ -120,6 +96,24 @@ Example:
 
 ```
 {
+    "new_record": {
+        "aws_account": "123456789012",
+        "aws_region": "us-east-1",
+        "packages": [
+            {
+                "package_name": "package-1",
+                "package_version": "v1"
+            },
+            {
+                "package_name": "package-1",
+                "package_version": "v2"
+            },
+            {
+                "package_name": "package-2",
+                "package_version": "v1"
+            }
+        ]
+    }
 }
 ```
 
@@ -128,6 +122,8 @@ Example:
 Example:
 
 ```
+{
+    "error_message": "An error occurred (BadRequestException) when calling the ExecuteSql operation: Duplicate entry 'instance-002' for key 'PRIMARY'"
 }
 ```
 
@@ -136,7 +132,12 @@ Example:
 #### Request
 
 ```
-GET: /ec2/{aws_image_id}
+GET: https://[Api-EndPoint]/ec2/{aws_knstance_id}
+```
+
+Example:
+```
+GET: /ec2/instance-002
 ```
 
 #### Response
@@ -148,6 +149,24 @@ Example:
 ```
 {
     "record": {
+        "aws_instance_id": "instance-002",
+        "aws_region": "us-east-1",
+        "aws_account": "123456789012",
+        "creation_date_utc": "2019-03-06 02:45:32.0",
+        "packages": [
+            {
+                "package_name": "package-2",
+                "package_version": "v1"
+            },
+            {
+                "package_name": "package-1",
+                "package_version": "v2"
+            },
+            {
+                "package_name": "package-1",
+                "package_version": "v1"
+            }
+        ]
     },
     "record_found": true
 }

@@ -1,0 +1,11 @@
+
+CREATE TABLE IF NOT EXISTS ec2 (
+    aws_instance_id VARCHAR(255) NOT NULL,
+    aws_region VARCHAR(30) NOT NULL,
+    aws_account VARCHAR(13) NOT NULL,
+    creation_date_utc DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (aws_instance_id),
+    INDEX aws_region_idx (aws_region),
+    INDEX aws_account_idx (aws_account),
+    INDEX creation_date_utc_idx (creation_date_utc)
+)

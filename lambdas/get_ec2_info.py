@@ -14,20 +14,20 @@ dal = DataAccessLayer(database_name, db_cluster_arn, db_credentials_secrets_stor
 #-----------------------------------------------------------------------------------------------
 def validate_ami_path_parameters(event):
     if key_missing_or_empty_value(event, 'pathParameters'):
-        raise ValueError('Invalid input - missing aws_image_id and aws_region as part of path parameters')
-    if key_missing_or_empty_value(event['pathParameters'], 'aws_image_id'):
-        raise ValueError('Invalid input - missing aws_image_id as part of path parameters')
-    if key_missing_or_empty_value(event['pathParameters'], 'aws_region'):
-        raise ValueError('Invalid input - missing aws_region as part of path parameters')
-    return event['pathParameters']['aws_image_id'], event['pathParameters']['aws_region']
+        raise ValueError('Invalid input - missing aws_instance_id as part of path parameters')
+    if key_missing_or_empty_value(event['pathParameters'], 'aws_instance_id'):
+        raise ValueError('Invalid input - missing aws_instance_id as part of path parameters')
+    return event['pathParameters']['aws_instance_id']
 
 def handler(event, context):
     try:
-        aws_image_id, aws_region = validate_ami_path_parameters(event)
-        list_amis = dal.find_ami(aws_image_id, aws_region)
+        print('1')
+        aws_instance_id = validate_ami_path_parameters(event)
+        print('2')
+        results = dal.find_ec2(aws_instance_id)
         output = {
-            'record': list_amis[0] if len(list_amis) > 0 else {},
-            'record_found': len(list_amis) > 0
+            'record': results[0] if len(results) > 0 else {},
+            'record_found': len(results) > 0
         }
         print(f'Output: {output}')
         return success(output)

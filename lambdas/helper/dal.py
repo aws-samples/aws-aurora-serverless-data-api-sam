@@ -46,14 +46,14 @@ class DataAccessLayer:
     #-----------------------------------------------------------------------------------------------
     # Package Functions
     #-----------------------------------------------------------------------------------------------
-    def find_package(self, name, version, repo):
-        sql = f'select * from {package_table_name} where name="{name}" and version="{version}" and repo="{repo}"'
+    def find_package(self, package_name, package_version):
+        sql = f'select * from {package_table_name} where package_name="{package_name}" and package_version="{package_version}"'
         response = self.execute_sql(sql)
         return self._build_object_from_db_response(response)
 
-    def save_package(self, name, version, repo, ignore_key_conflict=True):
+    def save_package(self, package_name, package_version, ignore_key_conflict=True):
         ignore = 'ignore' if ignore_key_conflict else ''
-        sql = f'insert {ignore} into {package_table_name} (name, version, repo) values ("{name}","{version}","{repo}")'
+        sql = f'insert {ignore} into {package_table_name} (package_name, package_version) values ("{package_name}","{package_version}")'
         response = self.execute_sql(sql)
         return response
 
@@ -61,7 +61,7 @@ class DataAccessLayer:
         ignore = 'ignore' if ignore_key_conflict else ''
         sql_stmt = ''
         for idx, package in enumerate(package_list):
-            package_sql = f'insert {ignore} into {package_table_name} (name, version, repo) values ("{package["name"]}","{package["version"]}","{package["repo"]}")'
+            package_sql = f'insert {ignore} into {package_table_name} (package_name, package_version) values ("{package["package_name"]}","{package["package_version"]}")'
             sql_stmt = f'{package_sql};{sql_stmt}'
             if (1+idx) % batch_size == 0:
                 self.execute_sql(sql_stmt)
@@ -72,21 +72,21 @@ class DataAccessLayer:
     #-----------------------------------------------------------------------------------------------
     # EC2-PACKAGE Functions
     #-----------------------------------------------------------------------------------------------
-    def _find_ec2_package_relations(self, aws_image_id, aws_region):
-        sql = f'select * from {ec2_package_table_name} where aws_image_id="{aws_image_id}" and aws_region="{aws_region}"'
+    def _find_ec2_package_relations(self, aws_instance_id):
+        sql = f'select * from {ec2_package_table_name} where aws_instance_id="{aws_instance_id}"'
         response = self.execute_sql(sql)
         return self._build_object_from_db_response(response)
 
-    def _save_ec2_package_relation(self, aws_image_id, aws_region, package_name, package_version, package_repo):
-        sql = f'insert into {ec2_package_table_name} (aws_image_id, aws_region, package_name, package_version, package_repo) values ("{aws_image_id}", "{aws_region}", "{package_name}", "{package_version}", "{package_repo}")'
+    def _save_ec2_package_relation(self, aws_instance_id, package_name, package_version):
+        sql = f'insert into {ec2_package_table_name} (aws_instance_id, package_name, package_version) values ("{aws_instance_id}", "{package_name}", "{package_version}")'
         response = self.execute_sql(sql)
         return response
 
-    def _save_ec2_package_relations_batch(self, aws_image_id, aws_region, package_list, batch_size=200, ignore_key_conflict=True):
+    def _save_ec2_package_relations_batch(self, aws_instance_id, package_list, batch_size=200, ignore_key_conflict=True):
         ignore = 'ignore' if ignore_key_conflict else ''
         sql_stmt = ''
         for idx, package in enumerate(package_list):
-            relation_sql = f'insert {ignore} into {ec2_package_table_name} (aws_image_id, aws_region, package_name, package_version, package_repo) values ("{aws_image_id}", "{aws_region}", "{package["name"]}","{package["version"]}","{package["repo"]}")'
+            relation_sql = f'insert {ignore} into {ec2_package_table_name} (aws_instance_id, package_name, package_version) values ("{aws_instance_id}", "{package["package_name"]}","{package["package_version"]}")'
             sql_stmt = f'{relation_sql};{sql_stmt}'
             if (1+idx) % batch_size == 0:
                 self.execute_sql(sql_stmt)
@@ -97,10 +97,9 @@ class DataAccessLayer:
     #-----------------------------------------------------------------------------------------------
     # EC2 Functions
     #-----------------------------------------------------------------------------------------------
-    def _build_ec2_record(self, aws_image_id, aws_region, fields):
+    def _build_ec2_record(self, aws_instance_id, fields):
         record = fields.copy()
-        record['aws_image_id'] =  aws_image_id
-        record['aws_region'] = aws_region
+        record['aws_instance_id'] =  aws_instance_id
         return record
 
     def _build_ec2_insert_sql_statement(self, record):
@@ -112,24 +111,24 @@ class DataAccessLayer:
         sql.append(')')
         return ''.join(sql)
 
-    def find_ec2(self, aws_image_id, aws_region):
-        sql = f'select * from {ec2_table_name} where aws_image_id="{aws_image_id}" and aws_region="{aws_region}"'
+    def find_ec2(self, aws_instance_id):
+        sql = f'select * from {ec2_table_name} where aws_instance_id="{aws_instance_id}"'
         response = self.execute_sql(sql)
         ec2s = self._build_object_from_db_response(response)
         for ec2_obj in ec2s:
             # find ec2-package relations and add packages to returned ec2 object
-            ec2_package_relations = self._find_ec2_package_relations(aws_image_id, aws_region)
-            ec2_obj['packages'] = [ {'package_name': package['package_name'], 'package_version': package['package_version'], 'package_repo': package['package_repo']} for package in ec2_package_relations]
+            ec2_package_relations = self._find_ec2_package_relations(aws_instance_id)
+            ec2_obj['packages'] = [ {'package_name': package['package_name'], 'package_version': package['package_version']} for package in ec2_package_relations]
         return ec2s
 
-    def save_ec2(self, aws_image_id, aws_region, input_fields):
+    def save_ec2(self, aws_instance_id, input_fields):
         # packages have their own table, so remove it to construct the ec2 record
         ec2_fields = input_fields.copy()
         ec2_fields.pop('packages')
-        ec2_record = self._build_ec2_record(aws_image_id, aws_region, ec2_fields)
+        ec2_record = self._build_ec2_record(aws_instance_id, ec2_fields)
         sql_stmt = self._build_ec2_insert_sql_statement(ec2_record)
         response = self.execute_sql(sql_stmt)
         if 'packages' in input_fields:
             self.save_packages_batch(input_fields['packages'])
-            self._save_ec2_package_relations_batch(aws_image_id, aws_region, input_fields['packages'] )
+            self._save_ec2_package_relations_batch(aws_instance_id, input_fields['packages'] )
 

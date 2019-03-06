@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Provision CM-DB's Aurora RDS database
+Description: Provisions Aurora Serverless and related resources for the Simple EC2 Inventory sample solution on AWS
 Parameters:
   AppName:
     Description: "Application Name"
     Type: String
-    Default: cmdb
+    Default: ec2-inv
   EnvType:
     Description: "Environment type (eg, dev, qa, prod)"
     Type: String
@@ -12,11 +12,11 @@ Parameters:
   DBClusterName:
     Description: "Aurora RDS cluster name"
     Type: String
-    Default: ess-cmdb
+    Default: ec2-inv-rds-cluster
   DatabaseName:
     Description: "Aurora RDS database name"
     Type: String
-    Default: ess_cmdb
+    Default: ec2_inventory_db
   DBMasterUserName:
     AllowedPattern: "[a-zA-Z0-9_]+"
     ConstraintDescription: must be between 1 to 16 alphanumeric characters.
@@ -24,10 +24,11 @@ Parameters:
     MaxLength: '16'
     MinLength: '1'
     Type: String
-    Default: ess_user_dev
+    Default: admin_user
   DBSubnetList:
-    Description: "List of exactly 3 subnets for the Aurora RDS cluster"
+    Description: "List of subnets for the Aurora RDS cluster"
     Type: List<AWS::EC2::Subnet::Id> 
+    ConstraintDescription: "must be a list of at least three existing subnets associated with at least three different availability zones."
 Resources:
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
@@ -40,7 +41,7 @@ Resources:
   DBSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Name: CMDBUserSecret
+      Name: !Sub "${EnvType}-AuroraUserSecret"
       Description: RDS database auto-generated user password
       GenerateSecretString:
         SecretStringTemplate: !Sub '{"username": "${DBMasterUserName}"}'
@@ -63,7 +64,7 @@ Resources:
       EngineVersion: 5.6.10a
       ScalingConfiguration:
         AutoPause: true
-        MaxCapacity: 2
+        MaxCapacity: 8
         MinCapacity: 2
         SecondsUntilAutoPause: 3600 # 1 hour
       DBSubnetGroupName:
@@ -73,25 +74,31 @@ Outputs:
     Description: Aurora Stack Name
     Value: !Ref AWS::StackName
     Export:
-      Name: !Sub ${AWS::StackName}-Name
+      Name: !Sub ${AWS::StackName}-StackName
 
-  DBSecretARN:
+  DatabaseName:
+    Description: Aurora Database Name
+    Value: !Ref DatabaseName
+    Export:
+      Name: !Sub ${AWS::StackName}-DatabaseName
+
+  DatabaseSecretArn:
     Description: Aurora Secret ARN
     Value: !Ref DBSecret
     Export:
-      Name: !Sub ${AWS::StackName}-SecretARN
+      Name: !Sub ${AWS::StackName}-DatabaseSecretArn
 
-  AuroraClusterId:
+  DatabaseClusterID:
     Description: Aurora Cluster ID
     Value: !Ref RDSCluster
     Export:
-      Name: !Sub ${AWS::StackName}-AuroraClusterID
+      Name: !Sub ${AWS::StackName}-DatabaseClusterID
 
-  AuroraClusterArn:
+  DatabaseClusterArn:
     Description: Aurora Cluster ARN
     Value: !Sub arn:aws:rds:${AWS::Region}:${AWS::AccountId}:cluster:${DBClusterName}
     Export:
-      Name: !Sub ${AWS::StackName}-AuroraClusterARN
+      Name: !Sub ${AWS::StackName}-DatabaseClusterArn
 
   AuroraDbURL:
     Description: Aurora Database URL
@@ -99,8 +106,8 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-DatabaseURL
 
-  DBMasterUserName:
-    Description: RDS Database admin account user
+  DatabaseMasterUserName:
+    Description: Aurora Database User
     Value: !Ref DBMasterUserName
     Export:
-      Name: !Sub ${AWS::StackName}-DatabaseUser
+      Name: !Sub ${AWS::StackName}-DatabaseMasterUserName

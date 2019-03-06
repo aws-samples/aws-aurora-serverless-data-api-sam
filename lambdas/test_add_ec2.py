@@ -1,9 +1,9 @@
-import register_ami
+import add_ec2_info
 
 if __name__ == "__main__":
     event={
-        "resource": "/ami/{aws_image_id}/{aws_region}",
-        "path": "/ami/ami-00000001/us-east-1",
+        "resource": "/ami/{aws_instance_id}",
+        "path": "/ami/i-0000000001",
         "httpMethod": "POST",
         "headers": {
             "Accept": "*/*",
@@ -19,12 +19,11 @@ if __name__ == "__main__":
             "X-Forwarded-Proto": "https"
         },
         "pathParameters": {
-            "aws_image_id": "test1-ami-00211008",
-            "aws_region": "us-east-1"
+            "aws_instance_id": "i-0000000001",
         },
         "requestContext": {
             "resourceId": "trf23c",
-            "resourcePath": "/ami/{aws_image_id}/{aws_region}",
+            "resourcePath": "/ami/i-0000000001",
             "httpMethod": "POST",
             "extendedRequestId": "VrjdiHUmoAMF41Q=",
             "requestTime": "25/Feb/2019:23:51:37 +0000",
@@ -38,7 +37,7 @@ if __name__ == "__main__":
             "domainName": "9ru2poro88.execute-api.us-east-1.amazonaws.com",
             "apiId": "9ru2poro88"
         },
-        'body':'{\n "aws_account": "123456789012", \n "image_type": "root",\n "server_type": "mail server",\n "base_os": "centos 7-5.1804",\n "aws_root_ami_id": "ami-10000001",\n "aws_root_ami_region": "us-east-1", \n "release_version": "mojave",\n "ansible_playbook_label": "playbook-1",\n "cm_state": "created",\n "jenkins_info": "jenkins job 0001",\n "rpms": [\n \t{"name": "aaa-1", "version": "v1", "repo": "repo-1"},\n \t{"name": "aaa-1", "version": "v2", "repo": "repo-1"},\n \t{"name": "aaa-2", "version": "v1", "repo": "repo-1"},\n \t{"name": "aaa-3", "version": "v1", "repo": "repo-1"},\n \t{"name": "aaa-4", "version": "v1", "repo": "repo-1"},\n \t{"name": "aaa-5", "version": "v1", "repo": "repo-1"},\n \t{"name": "aaa-6", "version": "v1", "repo": "repo-1"},\n \t{"name": "aaa-7", "version": "v1", "repo": "repo-1"},\n \t{"name": "aaa-8", "version": "v1", "repo": "repo-2"}\n ]\n}'
+        'body':'{"aws_account": "123456789012", "aws_region": "us-east-1", "packages": [{"package_name": "package-1", "package_version": "v1"}, {"package_name": "package-2", "package_version": "v2"}]}'
     }
-    result = register_ami.handler(event,{})
+    result = add_ec2_info.handler(event,{})
     print(f"Result: {result}")

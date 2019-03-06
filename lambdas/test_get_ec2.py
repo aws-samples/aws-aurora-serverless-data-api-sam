@@ -1,9 +1,9 @@
-import find_ami
+import get_ec2_info
 
 if __name__ == "__main__":
     event={
-        "resource": "/ami/{aws_image_id}/{aws_region}",
-        "path": "/ami/ami-00000001/us-east-1",
+        "resource": "/ami/{aws_instance_id}",
+        "path": "/ami/i-0000000001",
         "httpMethod": "GET",
         "headers": {
             "Accept": "*/*",
@@ -19,12 +19,11 @@ if __name__ == "__main__":
             "X-Forwarded-Proto": "https"
         },
         "pathParameters": {
-            "aws_image_id": "ami-0086ba4cdeb4384d6",
-            "aws_region": "us-east-1"
+            "aws_instance_id": "i-0000000001",
         },
         "requestContext": {
             "resourceId": "trf23c",
-            "resourcePath": "/ami/{aws_image_id}/{aws_region}",
+            "resourcePath": "/ami/{aws_instance_id}",
             "httpMethod": "POST",
             "extendedRequestId": "VrjdiHUmoAMF41Q=",
             "requestTime": "25/Feb/2019:23:51:37 +0000",
@@ -40,5 +39,5 @@ if __name__ == "__main__":
         },
         'body':'{}'
     }
-    result = find_ami.handler(event,{})
+    result = get_ec2_info.handler(event,{})
     print(f"Result: {result}")

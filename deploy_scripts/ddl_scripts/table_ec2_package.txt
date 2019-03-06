@@ -1,0 +1,12 @@
+
+CREATE TABLE IF NOT EXISTS ec2_package (
+    aws_instance_id VARCHAR(255) NOT NULL,
+    package_name VARCHAR(100) NOT NULL,
+    package_version VARCHAR(50) NOT NULL,
+    FOREIGN KEY (aws_instance_id)
+      REFERENCES ec2(aws_instance_id)
+      ON DELETE CASCADE,
+    FOREIGN KEY (package_name, package_version)
+      REFERENCES package(package_name, package_version)
+      ON DELETE CASCADE
+)

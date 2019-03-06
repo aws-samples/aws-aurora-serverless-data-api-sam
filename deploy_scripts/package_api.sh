@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #======================================================================
-# Package and Deploy CMDB solution on AWS
+# Package API resources for deployment
 #======================================================================
 
 # ./deploy.sh dev

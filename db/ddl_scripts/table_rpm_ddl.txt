@@ -1,7 +1,0 @@
-
-CREATE TABLE IF NOT EXISTS ess_cmdb.rpm (
-    name VARCHAR(255) NOT NULL,
-    version VARCHAR(50) NOT NULL,
-    repo VARCHAR(50) NOT NULL,
-    PRIMARY KEY (name, version, repo)
-)

@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Provisions AWS resources for the Simple EC2 Inventory sample solution on AWS
+Description: Provisions AWS Serverless API resourcs for the Simple EC2 Inventory sample solution on AWS
 Transform: 'AWS::Serverless-2016-10-31'
 Parameters:
   AppName:
@@ -10,16 +10,10 @@ Parameters:
     Description: "Environment type (eg, dev, qa, prod)"
     Type: String
     Default: dev
-  DBName:
-    Description: "RDS Database Name"
+  DatabaseStackName:
+    Description: "Name of the RDS CloudFormation stack to import parameters from"
     Type: String
     Default: ec2_inventory_db
-  DBClusterARN:
-    Description: "RDS Database cluster ARN"
-    Type: String
-  DBCredSecretsStoresArn:
-    Description: "RDS Database admin credentials secrets store secret ARN"
-    Type: String
   EC2TableName:
     Description: "EC2 Table name"
     Type: String
@@ -32,35 +26,52 @@ Parameters:
     Description: "EC2-Package Table name"
     Type: String
     Default: ec2_package
+  ApiStageName:
+    Description: "API Stage Name"
+    Type: String
+    Default: dev
 Globals:
   Function:
     Runtime: python3.6
     Timeout: 120
     MemorySize: 256
+    AutoPublishAlias: live
     Environment:
       Variables:
         EC2_TABLE_NAME: !Ref EC2TableName
         PACKAGE_TABLE_NAME: !Ref PackageTableName
         EC2_PACKAGE_RPM_TABLE_NAME: !Ref EC2PackageTableName
-        DB_NAME: !Ref DBName
-        DB_CLUSTER_ARN: !Ref DBClusterARN
-        DB_CRED_SECRETS_STORE_ARN: !Ref DBCredSecretsStoresArn
+        DB_NAME: 
+          Fn::ImportValue: 
+            !Sub "${DatabaseStackName}-DatabaseName"
+        DB_CLUSTER_ARN: 
+          Fn::ImportValue: 
+              !Sub "${DatabaseStackName}-DatabaseClusterArn" 
+        DB_CRED_SECRETS_STORE_ARN: 
+          Fn::ImportValue: 
+              !Sub "${DatabaseStackName}-DatabaseSecretArn" 
   Api:
+    Name: !Sub "${EnvType}-${AppName}-api"
     EndpointConfiguration: REGIONAL
 Resources:
+  EC2InventoryAPI:
+    Type: 'AWS::Serverless::Api'
+    Properties:
+        StageName: !Sub "${ApiStageName}"
   AddEC2InfoLambda:
     Type: 'AWS::Serverless::Function'
     Properties:
       Description: Adds EC2 info to the inventory
-      FunctionName: !Sub "${EnvType}-${AppName}-add-ec2-to-inventory-lambda"
-      Handler: add_ec2_info.handler
+      FunctionName: !Sub "${EnvType}-${AppName}-add-ec2-lambda"
       CodeUri: ../lambdas/
+      Handler: add_ec2_info.handler
       Events:
         AMIPost:
           Type: Api
           Properties:
             Path: '/ec2/{aws_instance_id}'
             Method: post
+            RestApiId: !Ref EC2InventoryAPI
       Policies:
         - Version: '2012-10-17' # Policy Document
           Statement:
@@ -73,15 +84,16 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Description: Retrieves EC2 info from the inventory
-      FunctionName: !Sub "${EnvType}-${AppName}-find-ami-lambda"
-      Handler: get_ec2_info.handler
+      FunctionName: !Sub "${EnvType}-${AppName}-get-ec2-lambda"
       CodeUri: ../lambdas/
+      Handler: get_ec2_info.handler
       Events:
         AMIPost:
           Type: Api
           Properties:
-            Path: '/ami/{aws_instance_id}'
+            Path: '/ec2/{aws_instance_id}'
             Method: get
+            RestApiId: !Ref EC2InventoryAPI
       Policies:
         - Version: '2012-10-17' # Policy Document
           Statement:
@@ -90,3 +102,15 @@ Resources:
                 - rds-data:ExecuteSql
                 - secretsmanager:GetSecretValue
               Resource: '*'
+Outputs:
+  StackName:
+    Description: API Stack Name
+    Value: !Ref AWS::StackName
+    Export:
+      Name: !Sub ${AWS::StackName}-StackName
+
+  ApiEndpoint:
+    Description: API Stage Endpoint
+    Value: !Ref EC2InventoryAPI
+    Export:
+      Name: !Sub ${AWS::StackName}-ApiEndPoint
