@@ -1,8 +1,23 @@
+    Project: Simple EC2 Inventory Serverless API
+    Author: Marcilio Mendonca (marcilio@amazon.com)
+    Date: March, 2019
+
 ## Intro
 
-Sample AWS solution showing how to use Amazon Aurora Serverless and the Data API as the backend of a Serverless SAM API (API Gateway + Lambda).
+
+This project is the result of a real ProServe engagement (customer fully anonymized and code modified). Its purpose is to provide a detailed walkthrough and entirey via code of how to leverage Amazon Aurora Serverless and the Data API to build a Serverless SAM API on AWS (API Gateway + Lambda). ProServe consultants, SAs, TAMs, and other technical folks at AWS can greatly benefit from this project and leverage the provided code to help other AWS customer with similar requirements.
+
+## Architecture
+
+![Simple EC2 Inventory Serverless API Using Aurora Serverless and the Data API](docs/aurora-serverless-sam-architecture.png)
+
+The architecture of the simple EC2 Inventory Serverless API solution discussed in this post is illustrated above. Client applications send REST requests to the Amazon [API Gateway](https://aws.amazon.com/api-gateway/) endpoint which then routes the request to the appropriate Lambda function depending on the API call. The [Lambda](https://aws.amazon.com/lambda/) functions implement the core API logic and make use of database credentials (eg, user and password) stored on AWS Secrets Manager to connect to the Data API Endpoint for the [Aurora serverless](https://aws.amazon.com/rds/aurora/serverless/) cluster. By leveraging the Data API, Lambda functions do not have to manage database connections or connection pools reducing logic complexity. Instead, simple API calls are made to execute SQL statements individually or in batch against the Aurora Serverless MySQL database cluster. 
+
+An advantage of using Aurora Serverless is the context of this simple EC2 inventory API is the fact that the database cluster does not need to be up and running 24x7. In fact, this makes perfect sense as the EC2 inventory database is only updated when an EC2s is being launched or terminated which might be a sporadic event. The database will be shut down automatically and seamlessly if there is not activity (eg, a Lambda interaction with the database) for a certain amount of time and be restored when needed. In addition, if a very large amount of EC2s are launched in a very short period of time, the Aurora Serverless database will automatically scale to meet traffic demands without requiring any additional logic coded in the Lambda functions (same for scale down events).
 
 ## Required software
+
+You'll need to download and install the following software:
 
 * [AWS CLI](https://aws.amazon.com/cli/)
 * [Python 3.6](https://www.python.org/downloads/)
@@ -188,3 +203,7 @@ Example:
     "error_message": "Some error message"
 }
 ```
+
+## Questions on Comments?
+
+Please contact Marcilio Mendonca (marcilio@amazon.com)

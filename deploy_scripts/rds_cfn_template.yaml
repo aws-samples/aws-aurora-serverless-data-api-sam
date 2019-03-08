@@ -82,6 +82,12 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-DatabaseName
 
+  DatabaseClusterArn:
+    Description: Aurora Cluster ARN
+    Value: !Sub arn:aws:rds:${AWS::Region}:${AWS::AccountId}:cluster:${DBClusterName}
+    Export:
+      Name: !Sub ${AWS::StackName}-DatabaseClusterArn
+
   DatabaseSecretArn:
     Description: Aurora Secret ARN
     Value: !Ref DBSecret
@@ -93,12 +99,6 @@ Outputs:
     Value: !Ref RDSCluster
     Export:
       Name: !Sub ${AWS::StackName}-DatabaseClusterID
-
-  DatabaseClusterArn:
-    Description: Aurora Cluster ARN
-    Value: !Sub arn:aws:rds:${AWS::Region}:${AWS::AccountId}:cluster:${DBClusterName}
-    Export:
-      Name: !Sub ${AWS::StackName}-DatabaseClusterArn
 
   AuroraDbURL:
     Description: Aurora Database URL

@@ -2,6 +2,20 @@ import boto3
 import json
 import os
 
+def get_cfn_output(key, outputs):
+    result = [ v['OutputValue'] for v in outputs if v['OutputKey'] == key ]
+    return result[0] if len(result) > 0 else ''
+
+# Retrieve required parameters from RDS stack exported output values
+rds_stack_name = os.getenv('rds_stack_name')
+cloudformation = boto3.resource('cloudformation')
+stack = cloudformation.Stack(rds_stack_name)
+database_name = get_cfn_output('DatabaseName', stack.outputs)
+db_cluster_arn = get_cfn_output('DatabaseClusterArn', stack.outputs)
+db_credentials_secrets_store_arn = get_cfn_output('DatabaseSecretArn', stack.outputs)
+print(f'Database info: [name={database_name}, cluster arn={db_cluster_arn}, secrets arn={db_credentials_secrets_store_arn}]')
+
+# Run DDL commands idempotently to create database and tables
 rds_client = boto3.client('rds-data')
 
 table_ddl_script_files = [
@@ -9,21 +23,6 @@ table_ddl_script_files = [
     'table_package.txt', 
     'table_ec2_package.txt'
 ]
-
-
-rds_stack_name = os.getenv('rds_stack_name')
-cloudformation = boto3.resource('cloudformation')
-stack = cloudformation.Stack(rds_stack_name)
-
-def get_cfn_output(key, outputs):
-    result = [ v['OutputValue'] for v in outputs if v['OutputKey'] == key ]
-    return result[0] if len(result) > 0 else ''
-
-database_name = get_cfn_output('DatabaseName', stack.outputs)
-db_cluster_arn = get_cfn_output('DatabaseClusterArn', stack.outputs)
-db_credentials_secrets_store_arn = get_cfn_output('DatabaseSecretArn', stack.outputs)
-
-print(f'Database info: [name={database_name}, cluster arn={db_cluster_arn}, secrets arn={db_credentials_secrets_store_arn}]')
 
 def execute_sql(sql):
     print(f'Running SQL statement: {sql}')
