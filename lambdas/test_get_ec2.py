@@ -1,3 +1,20 @@
+import boto3
+import os
+
+rds_stack_name = os.getenv('rds_stack_name', 'dev-ec2-inv-database-stack')
+
+def get_cfn_output(key, outputs):
+    result = [ v['OutputValue'] for v in outputs if v['OutputKey'] == key ]
+    return result[0] if len(result) > 0 else ''
+
+cloudformation = boto3.resource('cloudformation')
+stack = cloudformation.Stack(rds_stack_name)
+
+x=get_cfn_output('DatabaseName', stack.outputs)
+os.environ["DB_NAME"] = get_cfn_output('DatabaseName', stack.outputs)
+os.environ["DB_CLUSTER_ARN"] =  get_cfn_output('DatabaseClusterArn', stack.outputs)
+os.environ["DB_CRED_SECRETS_STORE_ARN"] = get_cfn_output('DatabaseSecretArn', stack.outputs)
+
 import get_ec2_info
 
 if __name__ == "__main__":

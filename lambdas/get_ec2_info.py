@@ -12,7 +12,7 @@ dal = DataAccessLayer(database_name, db_cluster_arn, db_credentials_secrets_stor
 #-----------------------------------------------------------------------------------------------
 # Input Validation
 #-----------------------------------------------------------------------------------------------
-def validate_ami_path_parameters(event):
+def validate_path_parameters(event):
     if key_missing_or_empty_value(event, 'pathParameters'):
         raise ValueError('Invalid input - missing aws_instance_id as part of path parameters')
     if key_missing_or_empty_value(event['pathParameters'], 'aws_instance_id'):
@@ -21,9 +21,7 @@ def validate_ami_path_parameters(event):
 
 def handler(event, context):
     try:
-        print('1')
-        aws_instance_id = validate_ami_path_parameters(event)
-        print('2')
+        aws_instance_id = validate_path_parameters(event)
         results = dal.find_ec2(aws_instance_id)
         output = {
             'record': results[0] if len(results) > 0 else {},

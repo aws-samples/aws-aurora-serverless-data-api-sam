@@ -10,19 +10,30 @@ db_credentials_secrets_store_arn = os.getenv('DB_CRED_SECRETS_STORE_ARN')
 
 dal = DataAccessLayer(database_name, db_cluster_arn, db_credentials_secrets_store_arn)
 
-ami_valid_fields = ['aws_account', 'image_type', 'server_type', 'base_os', 'aws_root_ami_id', 
-                    'aws_root_ami_region', 'release_version', 'ansible_playbook_label', 
-                    'cm_state', 'jenkins_info', 'rpms']
+ec2_valid_fields = ['aws_account', 'aws_region', 'packages']
 
 #-----------------------------------------------------------------------------------------------
 # Input Validation
 #-----------------------------------------------------------------------------------------------
-def validate_ami_path_parameters(event):
+def validate_ec2_path_parameters(event):
     if key_missing_or_empty_value(event, 'pathParameters'):
         raise ValueError('Invalid input - missing aws_instance_id as part of path parameters')
     if key_missing_or_empty_value(event['pathParameters'], 'aws_instance_id'):
         raise ValueError('Invalid input - missing aws_instance_id as part of path parameters')
     return event['pathParameters']['aws_instance_id']
+
+def validate_ec2_input_parameters(input_fields):
+    for field in input_fields:
+        if field not in ec2_valid_fields:
+            raise ValueError(f'Invalid EC2 input parameter "{field}"!')
+
+def validate_input(event):
+    aws_instance_id = validate_ec2_path_parameters(event)
+    if key_missing_or_empty_value(event, 'body'):
+        raise ValueError('Invalid input - body must contain EC2 mandatory attributes')
+    input_fields = json.loads(event['body'])
+    validate_ec2_input_parameters(input_fields.keys())
+    return aws_instance_id, input_fields
 
 #-----------------------------------------------------------------------------------------------
 # Lambda Entrypoint
@@ -30,11 +41,7 @@ def validate_ami_path_parameters(event):
 def handler(event, context):
     print(f'Event received: {event}')
     try:
-        aws_instance_id = validate_ami_path_parameters(event)
-        if key_missing_or_empty_value(event, 'body'):
-            raise ValueError('Invalid input - body must contain AMI mandatory attributes')
-        input_fields = json.loads(event['body'])
-
+        aws_instance_id, input_fields = validate_input(event)
         dal.save_ec2(aws_instance_id, input_fields)
         output = {
             'new_record': input_fields
