@@ -7,6 +7,10 @@
 
 This project is the result of a real ProServe engagement (customer fully anonymized and code modified). Its purpose is to provide a detailed walkthrough and entirey via code of how to leverage Amazon Aurora Serverless and the Data API to build a Serverless SAM API on AWS (API Gateway + Lambda). ProServe consultants, SAs, TAMs, and other technical folks at AWS can greatly benefit from this project and leverage the provided code to help other AWS customer with similar requirements.
 
+## Limitations
+
+As of now (March 2018), the Data API (still in Beta) is only available in ```us-east-1``` and requires the latest boto3 version (which is already packaged as part of the Lambda packagin.). So, __please make sure you deploy this project in ```us-east-1```___.
+
 ## Architecture
 
 ![Simple EC2 Inventory Serverless API Using Aurora Serverless and the Data API](docs/aurora-serverless-sam-architecture.png)
@@ -95,10 +99,10 @@ POST: /ec2/instance-002
     "aws_region": "123456789012", 
     "aws_account": "123456789012",
     "packages": [
-    	{"name": "package-1", "version": "v1"},
-    	{"name": "package-1", "version": "v2"},
-    	{"name": "package-2", "version": "v1"},
-    	{"name": "package-3", "version": "v1"}
+    	{"package_name": "package-1", "package_version": "v1"},
+    	{"package_name": "package-1", "package_version": "v2"},
+    	{"package_name": "package-2", "package_version": "v1"},
+    	{"package_name": "package-3", "package_version": "v1"}
     ]
 }
 ```
@@ -206,4 +210,4 @@ Example:
 
 ## Questions on Comments?
 
-Please contact Marcilio Mendonca (marcilio@amazon.com)
+Please contact Marcilio Mendonca (marcilio@amazon.com) if you have any questions or comments.
