@@ -41,15 +41,15 @@ Globals:
         EC2_TABLE_NAME: !Ref EC2TableName
         PACKAGE_TABLE_NAME: !Ref PackageTableName
         EC2_PACKAGE_RPM_TABLE_NAME: !Ref EC2PackageTableName
-        DB_NAME: 
-          Fn::ImportValue: 
+        DB_NAME:
+          Fn::ImportValue:
             !Sub "${DatabaseStackName}-DatabaseName"
-        DB_CLUSTER_ARN: 
-          Fn::ImportValue: 
-              !Sub "${DatabaseStackName}-DatabaseClusterArn" 
-        DB_CRED_SECRETS_STORE_ARN: 
-          Fn::ImportValue: 
-              !Sub "${DatabaseStackName}-DatabaseSecretArn" 
+        DB_CLUSTER_ARN:
+          Fn::ImportValue:
+              !Sub "${DatabaseStackName}-DatabaseClusterArn"
+        DB_CRED_SECRETS_STORE_ARN:
+          Fn::ImportValue:
+              !Sub "${DatabaseStackName}-DatabaseSecretArn"
   Api:
     Name: !Sub "${EnvType}-${AppName}-api"
     EndpointConfiguration: REGIONAL
@@ -78,8 +78,15 @@ Resources:
             - Effect: Allow
               Action:
                 - rds-data:ExecuteSql
+              Resource:
+                Fn::ImportValue:
+                  !Sub "${DatabaseStackName}-DatabaseClusterArn"
+            - Effect: Allow
+              Action:
                 - secretsmanager:GetSecretValue
-              Resource: '*'
+              Resource:
+                Fn::ImportValue:
+                  !Sub "${DatabaseStackName}-DatabaseSecretArn"
   GetEC2InfoLambda:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -100,8 +107,15 @@ Resources:
             - Effect: Allow
               Action:
                 - rds-data:ExecuteSql
+              Resource:
+                Fn::ImportValue:
+                  !Sub "${DatabaseStackName}-DatabaseClusterArn"
+            - Effect: Allow
+              Action:
                 - secretsmanager:GetSecretValue
-              Resource: '*'
+              Resource:
+                Fn::ImportValue:
+                  !Sub "${DatabaseStackName}-DatabaseSecretArn"
 Outputs:
   StackName:
     Description: API Stack Name
