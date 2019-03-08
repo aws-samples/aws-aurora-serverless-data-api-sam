@@ -9,7 +9,7 @@ This project is the result of a real ProServe engagement (customer fully anonymi
 
 ## Limitations
 
-As of today (March 2019), the Data API (still in Beta) is only available in ```us-east-1``` and requires the latest boto3 version (which is already packaged as part of the Lambda packagin.). So, __please make sure you deploy this project in ```us-east-1```___.
+As of today (March 2019), the Data API (still in Beta) is only available in ```us-east-1``` and requires the latest boto3 version (which is already packaged as part of the Lambda packagin.). So, __please make sure you deploy this project in ```us-east-1```__.
 
 ## Architecture
 
