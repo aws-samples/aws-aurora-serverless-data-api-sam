@@ -18,8 +18,6 @@ env_type=$1
 
 . "./deploy_scripts/${env_type}-env.sh"
 
-rds_cfn_template="rds_cfn_template.yaml"
-
 aws cloudformation create-stack \
     --template-body "file://deploy_scripts/${rds_cfn_template}" \
     --stack-name $rds_stack_name \

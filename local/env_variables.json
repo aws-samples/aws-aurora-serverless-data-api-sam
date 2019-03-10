@@ -1,0 +1,7 @@
+{
+    "HelloWorldFunction": {
+        "DB_NAME": "ec2_inventory_db",
+        "DB_CLUSTER_ARN": "arn:aws:rds:us-east-1:665243897136:cluster:dev-aurora-ec2-inventory-cluster",
+        "DB_CRED_SECRETS_STORE_ARN": "ec2_arn:aws:secretsmanager:us-east-1:665243897136:secret:dev-AuroraUserSecret-DhpkOIinventory_db"
+    }
+}

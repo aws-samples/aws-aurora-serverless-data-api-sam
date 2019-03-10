@@ -23,7 +23,7 @@ pack_dist_dir="${pack_root_dir}/dist"
 
 (cd $pack_dist_dir \
 && aws cloudformation deploy \
-    --template-file $gen_cfn_template \
+    --template-file $gen_api_cfn_template \
     --stack-name $api_stack_name \
     --parameter-overrides \
         ProjectName="$app_name" \

@@ -27,7 +27,7 @@ Parameters:
     Default: admin_user
   DBSubnetList:
     Description: "List of subnets for the Aurora RDS cluster"
-    Type: List<AWS::EC2::Subnet::Id> 
+    Type: List<AWS::EC2::Subnet::Id>
     ConstraintDescription: "must be a list of at least three existing subnets associated with at least three different availability zones."
 Resources:
   DBSubnetGroup:
@@ -66,7 +66,7 @@ Resources:
         AutoPause: true
         MaxCapacity: 8
         MinCapacity: 2
-        SecondsUntilAutoPause: 3600 # 1 hour
+        SecondsUntilAutoPause: 900 # 15 min
       DBSubnetGroupName:
         Ref: DBSubnetGroup
 Outputs:

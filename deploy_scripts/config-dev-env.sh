@@ -18,7 +18,7 @@ export env_type="dev"
 export s3_bucket_deployment_artifacts="ec2-inventory-artifacts"
 
 # ----- RDS Stack ----- #
-# RDS database name (a-zA-Z0-9_) 
+# RDS database name (a-zA-Z0-9_)
 export db_name="ec2_inventory_db"
 # RDS Aurora Serverless Cluster Name (a-zA-Z0-9-)
 export db_cluster_name="${env_type}-aurora-ec2-inventory-cluster"
@@ -36,8 +36,9 @@ export api_stage_name="dev"
 
 # You probably don't need to change these values
 export app_name="ec2-inv"
-export cfn_template="api_cfn_template.yaml"
-export gen_cfn_template="generated-${cfn_template}"
+export rds_cfn_template="rds_cfn_template.yaml"
+export api_cfn_template="api_cfn_template.yaml"
+export gen_api_cfn_template="generated-${api_cfn_template}"
 
 export rds_stack_name="${env_type}-${app_name}-database-stack"
 export api_stack_name="${env_type}-${app_name}-api-stack"

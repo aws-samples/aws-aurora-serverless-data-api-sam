@@ -34,7 +34,7 @@ cp -R "${virtual_env_location}/lib/python3.6/site-packages/" "${pack_dist_dir}/l
 echo "Creating deployment package under '${pack_dist_dir}' and uploading it to s3://${s3_bucket_deployment_artifacts}"
 (cd $pack_dist_dir \
  && aws cloudformation package \
-    --template-file "./deploy_scripts/${cfn_template}" \
+    --template-file "./deploy_scripts/${api_cfn_template}" \
     --s3-bucket $s3_bucket_deployment_artifacts \
-    --output-template-file $gen_cfn_template \
- && cat $gen_cfn_template)
+    --output-template-file $gen_api_cfn_template \
+ && cat $gen_api_cfn_template)
