@@ -66,7 +66,7 @@ Resources:
       CodeUri: ../lambdas/
       Handler: add_ec2_info.handler
       Events:
-        AMIPost:
+        EC2PostEvent:
           Type: Api
           Properties:
             Path: '/ec2/{aws_instance_id}'
@@ -95,7 +95,7 @@ Resources:
       CodeUri: ../lambdas/
       Handler: get_ec2_info.handler
       Events:
-        AMIPost:
+        EC2GetEvent:
           Type: Api
           Properties:
             Path: '/ec2/{aws_instance_id}'
