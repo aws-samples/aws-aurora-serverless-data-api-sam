@@ -58,6 +58,7 @@ Resources:
     Type: 'AWS::Serverless::Api'
     Properties:
         StageName: !Sub "${ApiStageName}"
+        TracingEnabled: True
   AddEC2InfoLambda:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -65,6 +66,7 @@ Resources:
       FunctionName: !Sub "${EnvType}-${AppName}-add-ec2-lambda"
       CodeUri: ../lambdas/
       Handler: add_ec2_info.handler
+      Tracing: Active
       Events:
         EC2PostEvent:
           Type: Api
@@ -87,6 +89,11 @@ Resources:
               Resource:
                 Fn::ImportValue:
                   !Sub "${DatabaseStackName}-DatabaseSecretArn"
+            - Effect: Allow
+              Action:
+                - xray:PutTraceSegments
+                - xray:PutTelemetryRecords
+              Resource: "*"
   GetEC2InfoLambda:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -94,6 +101,7 @@ Resources:
       FunctionName: !Sub "${EnvType}-${AppName}-get-ec2-lambda"
       CodeUri: ../lambdas/
       Handler: get_ec2_info.handler
+      Tracing: Active
       Events:
         EC2GetEvent:
           Type: Api
@@ -116,6 +124,11 @@ Resources:
               Resource:
                 Fn::ImportValue:
                   !Sub "${DatabaseStackName}-DatabaseSecretArn"
+            - Effect: Allow
+              Action:
+                - xray:PutTraceSegments
+                - xray:PutTelemetryRecords
+              Resource: "*"
 Outputs:
   StackName:
     Description: API Stack Name

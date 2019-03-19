@@ -15,7 +15,7 @@ As of today (March 2019), the Data API (still in Beta) is only available in ```u
 
 ![Simple EC2 Inventory Serverless API Using Aurora Serverless and the Data API](docs/aurora-serverless-sam-architecture.png)
 
-The architecture of the simple EC2 Inventory Serverless API solution discussed in this post is illustrated above. Client applications send REST requests to the Amazon [API Gateway](https://aws.amazon.com/api-gateway/) endpoint which then routes the request to the appropriate Lambda function depending on the API call. The [Lambda](https://aws.amazon.com/lambda/) functions implement the core API logic and make use of database credentials (eg, user and password) stored on AWS Secrets Manager to connect to the Data API Endpoint for the [Aurora serverless](https://aws.amazon.com/rds/aurora/serverless/) cluster. By leveraging the Data API, Lambda functions do not have to manage database connections or connection pools reducing logic complexity. Instead, simple API calls are made to execute SQL statements individually or in batch against the Aurora Serverless MySQL database cluster. 
+The architecture of the simple EC2 Inventory Serverless API solution discussed in this post is illustrated above. Client applications send REST requests to the Amazon [API Gateway](https://aws.amazon.com/api-gateway/) endpoint which then routes the request to the appropriate Lambda function depending on the API call. The [Lambda](https://aws.amazon.com/lambda/) functions implement the core API logic and make use of database credentials (eg, user and password) stored on AWS Secrets Manager to connect to the Data API Endpoint for the [Aurora serverless](https://aws.amazon.com/rds/aurora/serverless/) cluster. By leveraging the Data API, Lambda functions do not have to manage database connections or connection pools reducing logic complexity. Instead, simple API calls are made to execute SQL statements individually or in batch against the Aurora Serverless MySQL database cluster.
 
 An advantage of using Aurora Serverless is the context of this simple EC2 inventory API is the fact that the database cluster does not need to be up and running 24x7. In fact, this makes perfect sense as the EC2 inventory database is only updated when an EC2s is being launched or terminated which might be a sporadic event. The database will be shut down automatically and seamlessly if there is not activity (eg, a Lambda interaction with the database) for a certain amount of time and be restored when needed. In addition, if a very large amount of EC2s are launched in a very short period of time, the Aurora Serverless database will automatically scale to meet traffic demands without requiring any additional logic coded in the Lambda functions (same for scale down events).
 
@@ -51,7 +51,7 @@ pipenv --venv
 
 ### Deploying the Database
 
-This uses the values from config file ```config-dev-env.sh```. 
+This uses the values from config file ```config-dev-env.sh```.
 __Important__: This file will be used everywhere! Make sure you edit the file with config value for your AWS account!
 
 Now deploy the database resources like this (__important__: Notice that we only specify the prefix of the config file `config-dev` not the full file name).
@@ -87,7 +87,7 @@ You can use [Postman](https://www.getpostman.com/downloads/) or ```curl``` to te
 Use the AWS Console to find out the API Endpoint for the stage named by variable ```api_stage_name``` in the ```config-dev-env.sh``` file.
 
 ### Add EC2 info to inventory
- 
+
 #### Request
 
 POST: https://[Api-EndPoint]/ec2/{aws_instance_id}
@@ -96,7 +96,7 @@ Example:
 ```
 POST: /ec2/instance-002
 {
-    "aws_region": "123456789012", 
+    "aws_region": "123456789012",
     "aws_account": "123456789012",
     "packages": [
     	{"package_name": "package-1", "package_version": "v1"},
@@ -207,6 +207,14 @@ Example:
     "error_message": "Some error message"
 }
 ```
+
+## Observability
+
+We've enabled observability of this application via [AWS X-Ray](https://aws.amazon.com/xray/). Take a look at ```lambdas/helper/dal.py``` in the source code and search for the ```x-ray``` keyword to find related observability code. 
+
+With the help of X-Ray we were able to identify bottlenecks and fix them. For example, we noticied from the X-Ray Service Graph in the AWS Console that when saving an EC2 record referencing 100 package objects (name, version) Lambda was taking about 18 secs in total to store each individual package in Aurora Serverless (ie, 1 package = 1 Data API call). We then built batch versions for persisting packages and package relations (see methods ```_save_packages_batch``` in the source code and ```_save_ec2_package_relations_batch```) that batch insert up to 200 SQL statement into a single Data API call (200 packages = 1 Data API call). This reduced the overall time to persist 100 package objects from 18 secs (one at time) to 828ms (single batch)! 
+
+Thanks AWS X-Ray! 
 
 ## Questions on Comments?
 

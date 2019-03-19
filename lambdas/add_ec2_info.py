@@ -1,5 +1,3 @@
-import boto3
-import json
 import os
 from helper.dal import *
 from helper.utils import *

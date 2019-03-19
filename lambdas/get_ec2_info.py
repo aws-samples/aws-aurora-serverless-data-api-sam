@@ -1,5 +1,3 @@
-import boto3
-import json
 from helper.dal import *
 from helper.utils import *
 
@@ -31,4 +29,4 @@ def handler(event, context):
         return success(output)
     except Exception as e:
         print(f'Error: {e}')
-        return error(400, str(e)) 
+        return error(400, str(e))
