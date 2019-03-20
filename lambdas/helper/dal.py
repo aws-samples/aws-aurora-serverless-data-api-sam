@@ -22,19 +22,19 @@ class DataAccessLayer:
         self._db_cluster_arn = db_cluster_arn
         self._db_credentials_secrets_store_arn = db_credentials_secrets_store_arn
 
-    def _xray_seg(self):
-        return xray_recorder.current_subsegment()
+    def _xray_annotation(self, name, value):
+        return xray_recorder.current_subsegment().put_annotation(name, value)
 
     @xray_recorder.capture('execute_sql')
     def execute_sql(self, sql_stmt):
         print(f'Running SQL: {sql_stmt}')
-        self._xray_seg().put_annotation('sql_statement', sql_stmt)
+        self._xray_annotation('sql_statement', sql_stmt)
         result = self._rdsdata_client.execute_sql(
             awsSecretStoreArn=self._db_credentials_secrets_store_arn,
             database=self._database_name,
             dbClusterOrInstanceArn=self._db_cluster_arn,
             sqlStatements=sql_stmt)
-        self._xray_seg().put_annotation('rdsdata_executesql_result', json.dumps(result))
+        self._xray_annotation('rdsdata_executesql_result', json.dumps(result))
         return result
 
     @xray_recorder.capture('build_object_from_db_response')
@@ -129,7 +129,7 @@ class DataAccessLayer:
 
     @xray_recorder.capture('find_ec2')
     def find_ec2(self, aws_instance_id):
-        self._xray_seg().put_annotation('aws_instance_id', aws_instance_id)
+        self._xray_annotation('aws_instance_id', aws_instance_id)
         sql = f'select * from {ec2_table_name} where aws_instance_id="{aws_instance_id}"'
         response = self.execute_sql(sql)
         ec2s = self._build_object_from_db_response(response)
@@ -142,8 +142,8 @@ class DataAccessLayer:
     @xray_recorder.capture('save_ec2')
     def save_ec2(self, aws_instance_id, input_fields):
         num_ec2_packages = len(input_fields['packages']) if 'packages' in input_fields else 0
-        self._xray_seg().put_annotation('aws_instance_id', aws_instance_id)
-        self._xray_seg().put_annotation('num_ec2_packages', num_ec2_packages)
+        self._xray_annotation('aws_instance_id', aws_instance_id)
+        self._xray_annotation('num_ec2_packages', num_ec2_packages)
         # packages have their own table, so remove it to construct the ec2 record
         ec2_fields = input_fields.copy()
         ec2_fields.pop('packages')

@@ -210,11 +210,11 @@ Example:
 
 ## Observability
 
-We've enabled observability of this application via [AWS X-Ray](https://aws.amazon.com/xray/). Take a look at ```lambdas/helper/dal.py``` in the source code and search for the ```x-ray``` keyword to find related observability code. 
+We've enabled observability of this application via [AWS X-Ray](https://aws.amazon.com/xray/). Take a look at ```lambdas/helper/dal.py``` in the source code and search for ```x-ray``` and ```xray``` keywords to find observability-related logic.
 
-With the help of X-Ray we were able to identify bottlenecks and fix them. For example, we noticied from the X-Ray Service Graph in the AWS Console that when saving an EC2 record referencing 100 package objects (name, version) Lambda was taking about 18 secs in total to store each individual package in Aurora Serverless (ie, 1 package = 1 Data API call). We then built batch versions for persisting packages and package relations (see methods ```_save_packages_batch``` in the source code and ```_save_ec2_package_relations_batch```) that batch insert up to 200 SQL statement into a single Data API call (200 packages = 1 Data API call). This reduced the overall time to persist 100 package objects from 18 secs (one at time) to 828ms (single batch)! 
+With the help of X-Ray we were able to identify bottlenecks and fix them. For example, we noticied from the X-Ray Service Graph in the AWS Console that when saving an EC2 record referencing 100 package objects (name, version) Lambda was taking about 18 secs in total to store each individual package in Aurora Serverless (ie, 1 package = 1 Data API call). We then built batch versions for persisting packages and package relations (see methods ```_save_packages_batch``` in the source code and ```_save_ec2_package_relations_batch```) that batch insert up to 200 SQL statement into a single Data API call (200 packages = 1 Data API call). This reduced the overall time to persist 100 package objects from 18 secs (one at time) to 828ms (single batch)!
 
-Thanks AWS X-Ray! 
+Thanks AWS X-Ray!
 
 ## Questions on Comments?
 
