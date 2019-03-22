@@ -1,6 +1,6 @@
 ## Intro
 
-This project provides comprehensive sample code on how to leverage Amazon Aurora Serverless and the Data API to build connectionless Serverless applications on AWS.
+This project provides comprehensive sample code that shows how to leverage Amazon Aurora Serverless and the Data API to build connectionless Serverless applications on AWS.
 
 Please check the corresponding [AWS Blog Post](TODO) for further details.
 
