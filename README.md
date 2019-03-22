@@ -1,12 +1,12 @@
 ## Intro
 
-This project provides full sample code of how to leverage Amazon Aurora Serverless and the Data API to build connectionless Serverless applications on AWS.
+This project provides comprehensive sample code on how to leverage Amazon Aurora Serverless and the Data API to build connectionless Serverless applications on AWS.
 
 Please check the corresponding [AWS Blog Post](TODO) for further details.
 
 ## Limitations
 
-As of today (March 2019), the Data API (still in Beta) is only available in ```us-east-1``` and requires the latest boto3 version (which is already packaged as part of the Lambda packagin.). So, __please make sure you deploy this project in ```us-east-1```__.
+As of now (March 2019), the Data API (still in Beta) is only available in ```us-east-1``` and requires the latest boto3 version (which is already packaged as part of the Lambda packagin.). So, __please make sure you deploy this project in ```us-east-1```__.
 
 ## Architecture
 
@@ -213,6 +213,6 @@ With the help of X-Ray we were able to identify bottlenecks and fix them. For ex
 
 Thanks AWS X-Ray!
 
-## Questions on Comments?
+## License Summary
 
-Please contact Marcilio Mendonca (marcilio@amazon.com) if you have any questions or comments.
+This sample code is made available under a modified MIT license. See the LICENSE file.
