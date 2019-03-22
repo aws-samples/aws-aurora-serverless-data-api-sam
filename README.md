@@ -85,13 +85,13 @@ Once you know the API endpoint, you can use [Postman](https://www.getpostman.com
 
 #### Request
 
-POST: https://[Api-EndPoint]/ec2/{aws_instance_id}
+POST: https://[Api-EndPoint]/ec2/{ec_instance_id}
 
 Example:
 ```
 POST: /ec2/instance-002
 {
-    "aws_region": "123456789012",
+    "aws_region": "us-east-1",
     "aws_account": "123456789012",
     "packages": [
     	{"package_name": "package-1", "package_version": "v1"},
@@ -148,7 +148,7 @@ Example:
 #### Request
 
 ```
-GET: https://[Api-EndPoint]/ec2/{aws_knstance_id}
+GET: https://[Api-EndPoint]/ec2/{ec2_instance_id}
 ```
 
 Example:
