@@ -51,11 +51,9 @@ pipenv --venv
 
 ### Deploying the Database
 
-This uses the values from config file ```config-dev-env.sh```.
-__Important__: This file will be used everywhere! Make sure you edit the file with config value for your AWS account!
+The deployment script reads the values from config file ```config-dev-env.sh``` (__important__: This file will be used everywhere! Make sure you edit the file with config value for your AWS account!).
 
-Now deploy the database resources like this (__important__: Notice that we only specify the prefix of the config file `config-dev` not the full file name).
-)
+Now deploy the database resources by invoking the deploy script and passing the config file as an input parameter (__important__: Notice that we only specify the prefix of the config file (eg, `config-dev`) not the full file name).
 
 ```bash
 # from project's root directory
@@ -78,15 +76,15 @@ cd deploy_scripts/ddl_scripts
 ./deploy_scripts/package_api.sh config-dev && ./deploy_scripts/deploy_api.sh config-dev
 ```
 
-Notice that we only specify the prefix of the file `cmdb-dev` not the full file name.
-
 ## APIs
-
-You can use [Postman](https://www.getpostman.com/downloads/) or ```curl``` to test the APIs.
 
 Use the AWS Console to find out the API Endpoint for the stage named by variable ```api_stage_name``` in the ```config-dev-env.sh``` file.
 
+Once you know the API endpoint, you can use [Postman](https://www.getpostman.com/downloads/) or ```curl``` to invoke and test the APIs.
+
 ### Add EC2 info to inventory
+
+* Add a new EC2 to the inventory by specifying the EC2 instance id (```aws_instance_id```), AWS region, and AWS account as well as the packages that have been deployed to the instance (```package_name``` and ```package_version```).
 
 #### Request
 
@@ -147,6 +145,8 @@ Example:
 ```
 
 ### Get EC2 info from inventory (includes packages)
+
+* Get information about an EC2 from the inventory by specifying the EC2 instance id (```aws_instance_id```).
 
 #### Request
 
