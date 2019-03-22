@@ -216,7 +216,7 @@ The picture below depicts X-Ray telling us that calling the Data API individuall
 
 ![Simple EC2 Inventory Serverless API Using Aurora Serverless and the Data API](docs/aurora-serverless-data-api-xray-no-batching-segments.png)
 
-And then we create a batch insert method and things look much better... 828ms. :)
+And then we tuned our batch insert method to use a single API call to batch insert all package objects at once and things look much better... 828ms. :)
 
 ![Simple EC2 Inventory Serverless API Using Aurora Serverless and the Data API](docs/aurora-serverless-data-api-xray-batching-segments.png)
 
