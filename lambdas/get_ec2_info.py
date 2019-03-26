@@ -16,6 +16,9 @@
 '''
 from helper.dal import *
 from helper.utils import *
+from helper.logging import get_logger
+
+logger = get_logger(__name__)
 
 database_name = os.getenv('DB_NAME')
 db_cluster_arn = os.getenv('DB_CLUSTER_ARN')
@@ -35,14 +38,15 @@ def validate_path_parameters(event):
 
 def handler(event, context):
     try:
+        logger.debug(f'Event received: {event}')
         aws_instance_id = validate_path_parameters(event)
         results = dal.find_ec2(aws_instance_id)
         output = {
             'record': results[0] if len(results) > 0 else {},
             'record_found': len(results) > 0
         }
-        print(f'Output: {output}')
+        logger.debug(f'Output: {output}')
         return success(output)
     except Exception as e:
-        print(f'Error: {e}')
+        logger.error(f'Error: {e}')
         return error(400, str(e))

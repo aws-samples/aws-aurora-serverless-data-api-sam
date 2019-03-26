@@ -18,6 +18,9 @@
 import os
 from helper.dal import *
 from helper.utils import *
+from helper.logging import get_logger
+
+logger = get_logger(__name__)
 
 database_name = os.getenv('DB_NAME')
 db_cluster_arn = os.getenv('DB_CLUSTER_ARN')
@@ -54,14 +57,15 @@ def validate_input(event):
 # Lambda Entrypoint
 #-----------------------------------------------------------------------------------------------
 def handler(event, context):
-    print(f'Event received: {event}')
     try:
+        logger.info(f'Event received: {event}')
         aws_instance_id, input_fields = validate_input(event)
         dal.save_ec2(aws_instance_id, input_fields)
         output = {
             'new_record': input_fields
         }
+        logger.debug(f'Output: {output}')
         return success(output)
     except Exception as e:
-        print(f'Error: {e}')
+        logger.error(f'Error: {e}')
         return error(400, str(e))

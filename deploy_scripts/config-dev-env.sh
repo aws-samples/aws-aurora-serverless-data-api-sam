@@ -31,6 +31,7 @@ export db_subnet_3="subnet-49550962"
 
 # ----- API Stack ----- #
 export api_stage_name="dev"
+export log_level="DEBUG"  # debug/info/error
 
 # ---------------------------------------------------------------
 

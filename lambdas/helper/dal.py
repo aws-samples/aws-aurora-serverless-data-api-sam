@@ -21,6 +21,9 @@
 import boto3
 import json
 import os
+from .logging import get_logger
+
+logger = get_logger(__name__)
 
 # AWS X-Ray support
 from aws_xray_sdk.core import xray_recorder, patch_all
@@ -43,7 +46,7 @@ class DataAccessLayer:
 
     @xray_recorder.capture('execute_sql')
     def execute_sql(self, sql_stmt):
-        print(f'Running SQL: {sql_stmt}')
+        logger.debug(f'Running SQL: {sql_stmt}')
         self._xray_annotation('sql_statement', sql_stmt)
         result = self._rdsdata_client.execute_sql(
             awsSecretStoreArn=self._db_credentials_secrets_store_arn,

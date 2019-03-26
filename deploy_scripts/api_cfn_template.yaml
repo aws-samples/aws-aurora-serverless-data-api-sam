@@ -30,6 +30,10 @@ Parameters:
     Description: "API Stage Name"
     Type: String
     Default: dev
+  LambdaLogLevel:
+    Description: "Log verbosity level for Lambda functions"
+    Type: String
+    Default: info
 Globals:
   Function:
     Runtime: python3.6
@@ -38,6 +42,7 @@ Globals:
     AutoPublishAlias: live
     Environment:
       Variables:
+        LOG_LEVEL: !Ref LambdaLogLevel
         EC2_TABLE_NAME: !Ref EC2TableName
         PACKAGE_TABLE_NAME: !Ref PackageTableName
         EC2_PACKAGE_RPM_TABLE_NAME: !Ref EC2PackageTableName

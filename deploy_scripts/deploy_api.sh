@@ -30,6 +30,7 @@ pack_dist_dir="${pack_root_dir}/dist"
         EnvType="$env_type" \
         DatabaseStackName="${rds_stack_name}" \
         ApiStageName="${api_stage_name}" \
+        LambdaLogLevel="${log_level}" \
     --capabilities \
         CAPABILITY_IAM
 )
