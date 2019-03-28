@@ -40,6 +40,7 @@ export app_name="ec2-inv"
 export rds_cfn_template="rds_cfn_template.yaml"
 export api_cfn_template="api_cfn_template.yaml"
 export gen_api_cfn_template="generated-${api_cfn_template}"
-
+export sam_build_dir=".aws-sam"
+export lambdas_dir="lambdas"
 export rds_stack_name="${env_type}-${app_name}-database-stack"
 export api_stack_name="${env_type}-${app_name}-api-stack"

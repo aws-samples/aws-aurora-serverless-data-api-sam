@@ -16,35 +16,23 @@ function error() {
 env_type=$1
 lambda_function=$2
 
-. "../deploy_scripts/${env_type}-env.sh"
+. "deploy_scripts/${env_type}-env.sh"
 
 if [ -z "$virtual_env_location" ]; then
     virtual_env_location=`pipenv --venv`
 fi
 
-lambdas_dir="../lambdas"
+# create or update requirements.txt
+# (cd lambdas/ && pipenv lock -r)
+
+# install dependencies from requirements.txt
+sam build \
+   -t deploy_scripts/${api_cfn_template} \
+   -s $lambdas_dir
+
+# run locally
 env_variables_file="env_variables.json"
-cfn_template_dir="../deploy_scripts"
-pack_root_dir="/tmp/${app_name}"
-pack_dist_dir="${pack_root_dir}/run_local/"
-
-echo "Creating local environment under ${pack_dist_dir} ..."
-rm -rf "$pack_root_dir"
-mkdir -p $pack_dist_dir
-# Copy SAM template
-cp "${cfn_template_dir}/${api_cfn_template}" $pack_dist_dir
-# Copy Lambda Python code
-cp "${lambdas_dir}"/*.py $pack_dist_dir
-# Copy Python dependencies from virtual environment
-cp -R "${virtual_env_location}/lib/python3.6/site-packages/" $pack_dist_dir
-# Copy Lambda event JSON and environment variables file
-cp *.json $pack_dist_dir
-
 echo "Running Lambda function locally: $lambda_function"
-(cd $pack_dist_dir &&
-  cat "${api_cfn_template}" | sed 's/\(CodeUri:\)\(.*\)$/\1 \./g' > template.yaml &&
-  sam local invoke "${lambda_function}" \
-    --event "${lambda_function}-event.json" \
-    --env-vars $env_variables_file \
-    --template template.yaml
-)
+sam local invoke "${lambda_function}" \
+    --event "local/${lambda_function}-event.json" \
+    --env-vars "local/${env_variables_file}"

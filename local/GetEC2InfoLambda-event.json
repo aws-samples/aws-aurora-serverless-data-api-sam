@@ -34,5 +34,5 @@
         "domainName": "9ru2poro88.execute-api.us-east-1.amazonaws.com",
         "apiId": "9ru2poro88"
     },
-    "body":"{\"aws_account\": \"123456789012\", \"aws_region\": \"us-east-1\", \"packages\": [{\"package_name\": \"package-1\", \"package_version\": \"v1\"}, {\"package_name\": \"package-2\", \"package_version\": \"v2\"}]}"
+    "body":"{}"
 }

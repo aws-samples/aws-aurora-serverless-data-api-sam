@@ -7,7 +7,7 @@ name = "pypi"
 aws-sam-cli = "*"
 
 [packages]
-"boto3" = "*"
+boto3 = "*"
 aws-xray-sdk = "*"
 
 [requires]

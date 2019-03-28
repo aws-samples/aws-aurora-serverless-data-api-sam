@@ -4,8 +4,6 @@
 # Package API resources for deployment
 #======================================================================
 
-# ./deploy.sh dev
-
 set -e
 
 function error() {
@@ -23,18 +21,15 @@ if [ -z "$virtual_env_location" ]; then
     virtual_env_location=`pipenv --venv`
 fi
 
-pack_root_dir="/tmp/${app_name}"
-pack_dist_dir="${pack_root_dir}/dist"
+# create or update requirements.txt
+# (cd lambdas/ && pipenv lock -r)
 
-rm -rf "$pack_root_dir"
-mkdir -p $pack_dist_dir
-cp -R . $pack_dist_dir/
-cp -R "${virtual_env_location}/lib/python3.6/site-packages/" "${pack_dist_dir}/lambdas"
+# install dependencies from requirements.txt
+sam build \
+   -t deploy_scripts/${api_cfn_template} \
+   -s $lambdas_dir
 
-echo "Creating deployment package under '${pack_dist_dir}' and uploading it to s3://${s3_bucket_deployment_artifacts}"
-(cd $pack_dist_dir \
- && aws cloudformation package \
-    --template-file "./deploy_scripts/${api_cfn_template}" \
-    --s3-bucket $s3_bucket_deployment_artifacts \
-    --output-template-file $gen_api_cfn_template \
- && cat $gen_api_cfn_template)
+# package lambdas and dependencies in S3
+sam package \
+   --s3-bucket $s3_bucket_deployment_artifacts \
+   --output-template-file "${sam_build_dir}/$gen_api_cfn_template"

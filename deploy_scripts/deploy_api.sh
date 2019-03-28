@@ -4,9 +4,6 @@
 # Deploys API resources on AWS
 #======================================================================
 
-# Sample invoke:
-# ./deploy.sh dev
-
 set -e
 
 function error() {
@@ -18,12 +15,8 @@ env_type=$1
 
 . "./deploy_scripts/${env_type}-env.sh"
 
-pack_root_dir="/tmp/${app_name}"
-pack_dist_dir="${pack_root_dir}/dist"
-
-(cd $pack_dist_dir \
-&& aws cloudformation deploy \
-    --template-file $gen_api_cfn_template \
+sam deploy \
+    --template-file "${sam_build_dir}/$gen_api_cfn_template" \
     --stack-name $api_stack_name \
     --parameter-overrides \
         ProjectName="$app_name" \
@@ -33,4 +26,3 @@ pack_dist_dir="${pack_root_dir}/dist"
         LambdaLogLevel="${log_level}" \
     --capabilities \
         CAPABILITY_IAM
-)

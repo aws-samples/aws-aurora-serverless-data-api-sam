@@ -26,18 +26,18 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:39e9b6516a72864f5a6b69f38edac087cc4ba623095f4528b916620e63de32b3",
-                "sha256:a3eb22bb975a200a69084ec2bb69819e483ad531bf05e7b73861fc1b333aad42"
+                "sha256:2e527686a72ff5fed8275e897df63fadbdca6d4d47f651d898dee89ba9b9eb4d",
+                "sha256:fa93b78f2530c748ad60e46250d2e7162deabc75db4e4e7c18500b2daa95855f"
             ],
             "index": "pypi",
-            "version": "==1.9.120"
+            "version": "==1.9.123"
         },
         "botocore": {
             "hashes": [
-                "sha256:2bf8768887bfb008406eec725eecf6f174307dac00f5fad244cdd5d39c6c2147",
-                "sha256:c0f9c57e7a8c65f17a62a0926c3e73686f6ae1c08abf3b5a63cc3a5bcc4c437b"
+                "sha256:7982ab3b3da1f7f2f23f0a12fbd34fe8efc514b53bbe61b536a61884a51db25c",
+                "sha256:da94f6087a075ecd01446a9ed4cd4c1d0c356c2c28e69095b23ed4c8814833f4"
             ],
-            "version": "==1.12.120"
+            "version": "==1.12.123"
         },
         "docutils": {
             "hashes": [
@@ -122,12 +122,12 @@
         },
         "aws-sam-cli": {
             "hashes": [
-                "sha256:ad332d33df6900aaed8422710389a234aa3bc8525c21b768fbc254f5c22bd481",
-                "sha256:ce30e982244b9ea70c9a053b84cf9c7f21ce55066dafa74ef41311b98d49cdcc",
-                "sha256:dcf712fdff1265a247b8d95cba8fd69bcb404928efad1199b549d42e2efe6ec6"
+                "sha256:50ac587d65d9b53e48b28b3605d3c2e6e0625dcc947e746359d87835627da021",
+                "sha256:915b22f442c19755aabf3d96d7909ca0967c06248c448b54f5afd31c763e72d2",
+                "sha256:b7f80838d57c1096a9a03ed703a91a8a5775a6ead33df8f31765ecf39b3a956f"
             ],
             "index": "pypi",
-            "version": "==0.14.0"
+            "version": "==0.14.2"
         },
         "aws-sam-translator": {
             "hashes": [
@@ -144,18 +144,18 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:39e9b6516a72864f5a6b69f38edac087cc4ba623095f4528b916620e63de32b3",
-                "sha256:a3eb22bb975a200a69084ec2bb69819e483ad531bf05e7b73861fc1b333aad42"
+                "sha256:2e527686a72ff5fed8275e897df63fadbdca6d4d47f651d898dee89ba9b9eb4d",
+                "sha256:fa93b78f2530c748ad60e46250d2e7162deabc75db4e4e7c18500b2daa95855f"
             ],
             "index": "pypi",
-            "version": "==1.9.120"
+            "version": "==1.9.123"
         },
         "botocore": {
             "hashes": [
-                "sha256:2bf8768887bfb008406eec725eecf6f174307dac00f5fad244cdd5d39c6c2147",
-                "sha256:c0f9c57e7a8c65f17a62a0926c3e73686f6ae1c08abf3b5a63cc3a5bcc4c437b"
+                "sha256:7982ab3b3da1f7f2f23f0a12fbd34fe8efc514b53bbe61b536a61884a51db25c",
+                "sha256:da94f6087a075ecd01446a9ed4cd4c1d0c356c2c28e69095b23ed4c8814833f4"
             ],
-            "version": "==1.12.120"
+            "version": "==1.12.123"
         },
         "certifi": {
             "hashes": [
@@ -201,10 +201,10 @@
         },
         "docker": {
             "hashes": [
-                "sha256:0076504c42b6a671c8e7c252913f59852669f5f882522f4d320ec7613b853553",
-                "sha256:d2c14d2cc7d54818897cc6f3cf73923c4e7dfe12f08f7bddda9dbea7fa82ea36"
+                "sha256:2b1f48041cfdcc9f6b5da0e04e0e326ded225e736762ade2060000e708f4c9b7",
+                "sha256:c456ded5420af5860441219ff8e51cdec531d65f4a9e948ccd4133e063b72f50"
             ],
-            "version": "==3.7.1"
+            "version": "==3.7.2"
         },
         "docker-pycreds": {
             "hashes": [
