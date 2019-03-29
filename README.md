@@ -241,6 +241,19 @@ local/run_local.sh config-dev GetEC2InfoLambda
 
 Exercise: Create an event JSON file for the ```AddEC2InfoLambda``` Lambda function and invoke it locally.
 
+## Running Integration Tests
+
+Various integration tests are available under directory ```tests/```. The tests use the ```pytest``` framework to run locally but make API calls against the actual API endpoint deployed in the cloud. So, before running the tests, make sure the API is actually deployed on AWS.
+
+The API endpoint is discovered automatically from the test script based on the ```ApiEndpoint``` output parameter produced by the API CloudFormation stack.
+
+To run the integration tests locally do this:
+
+```bash
+# from the project's root directory
+./tests/run_tests.sh config-dev
+```
+
 ## License Summary
 
-This sample code is made available under a modified MIT license. See the LICENSE file.
+This sample code is made available under a modified MIT license. See the LICENSE file for details.

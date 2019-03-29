@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #======================================================================
-# Packages Lambda code and dependencies and runs it locally
+# Build Lambda code and dependencies and runs it locally
 #======================================================================
 
 set -e

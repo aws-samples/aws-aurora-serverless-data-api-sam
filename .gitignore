@@ -1,5 +1,5 @@
 **/__pycache__/*
 /**/.DS_Store
 .vscode/settings.json
-**/test_*
 .aws-sam/
+**/.pytest_cache/

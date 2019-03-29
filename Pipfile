@@ -5,6 +5,9 @@ name = "pypi"
 
 [dev-packages]
 aws-sam-cli = "*"
+pytest = "*"
+requests = "*"
+uuid = "*"
 
 [packages]
 boto3 = "*"

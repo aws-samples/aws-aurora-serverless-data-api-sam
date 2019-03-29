@@ -143,6 +143,6 @@ Outputs:
 
   ApiEndpoint:
     Description: API Stage Endpoint
-    Value: !Ref EC2InventoryAPI
+    Value: !Sub "https://${EC2InventoryAPI}.execute-api.${AWS::Region}.amazonaws.com/${EnvType}"
     Export:
       Name: !Sub ${AWS::StackName}-ApiEndPoint
