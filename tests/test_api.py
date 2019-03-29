@@ -20,6 +20,7 @@ import requests
 import boto3
 import pytest
 import uuid
+from http import HTTPStatus
 
 def get_cfn_output(key, outputs):
     result = [ v['OutputValue'] for v in outputs if v['OutputKey'] == key ]
@@ -47,11 +48,12 @@ def ec2_input_data():
         }
     }
 
+# TODO: add_ec2* tests have side effects (create DB record for test but does not delete it)
 # TODO: Warm up Aurora Serverless with an initial request + sleep
 
 def test_add_ec2_info_returns_expected_attributes(api_endpoint, ec2_input_data):
     r = requests.post(f'{api_endpoint}/ec2/{ec2_input_data["instance_id"]}', json = ec2_input_data['input_data'])
-    assert 200 == r.status_code
+    assert  HTTPStatus.OK == r.status_code
     response = r.json()
     assert 'new_record' in response
     assert ec2_input_data['input_data']['aws_region'] == response['new_record']['aws_region']
@@ -60,28 +62,28 @@ def test_add_ec2_info_returns_expected_attributes(api_endpoint, ec2_input_data):
 
 def test_add_ec2_info_error_duplicate(api_endpoint, ec2_input_data):
     r = requests.post(f'{api_endpoint}/ec2/{ec2_input_data["instance_id"]}', json = ec2_input_data['input_data'])
-    assert 200 == r.status_code
+    assert  HTTPStatus.OK == r.status_code
 
     r = requests.post(f'{api_endpoint}/ec2/{ec2_input_data["instance_id"]}', json = ec2_input_data['input_data'])
     response = r.json()
-    assert 400 == r.status_code
+    assert  HTTPStatus. BAD_REQUEST == r.status_code
 
 def test_add_ec2_info_invalid_input_field(api_endpoint):
     r = requests.post(f'{api_endpoint}/ec2/{uuid.uuid4()}', json = {'invalid_field_name': 'any-value'})
-    assert 400 == r.status_code
+    assert  HTTPStatus. BAD_REQUEST == r.status_code
 
 def test_get_ec2_info_record_found(api_endpoint, ec2_input_data):
     r = requests.post(f'{api_endpoint}/ec2/{ec2_input_data["instance_id"]}', json = ec2_input_data['input_data'])
-    assert 200 == r.status_code
+    assert  HTTPStatus.OK == r.status_code
 
     r = requests.get(f'{api_endpoint}/ec2/{ec2_input_data["instance_id"]}')
-    assert r.status_code == 200
+    assert r.status_code ==  HTTPStatus.OK
     response = r.json()
     assert True == response['record_found']
 
 def test_get_ec2_info_record_not_found(api_endpoint):
     instance_id = uuid.uuid4()
     r = requests.get(f'{api_endpoint}/ec2/{instance_id}')
-    assert r.status_code == 200
+    assert r.status_code ==  HTTPStatus.OK
     response = r.json()
     assert False == response['record_found']
