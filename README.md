@@ -214,9 +214,9 @@ Example:
 
 ## Observability
 
-We enabled observability of this application via [AWS X-Ray](https://aws.amazon.com/xray/). Take a look at source file ```lambdas/helper/dal.py``` in and search for the ```x-ray``` and ```xray``` keywords to find observability-related logic.
+We enabled observability of this application via [AWS X-Ray](https://aws.amazon.com/xray/). Take a look at source file ```lambdas/helper/dal.py``` and search for ```x-ray``` and ```xray``` to find related logic.
 
-With the help of X-Ray we were able to identify bottlenecks and fix them. For example, we noticied from the X-Ray Service Graph in the AWS Console that when saving an EC2 record referencing 100 package objects (name, version) Lambda was taking about 18 secs in total to store each individual package in Aurora Serverless (ie, 1 package = 1 Data API call). We then built batch versions for persisting packages and package relations (see methods ```_save_packages_batch``` in the source code and ```_save_ec2_package_relations_batch```) that batch insert up to 200 SQL statement into a single Data API call (200 packages = 1 Data API call). This reduced the overall time to persist 100 package objects from 18 secs (one at time) to 828ms (single batch)!
+With the help of X-Ray we were able to identify bottlenecks and fix them. For example, we noticed from the X-Ray Service Graph in the AWS Console that when saving an EC2 record referencing 100 package objects (name, version) Lambda was taking about 18 secs in total to store each individual package in Aurora Serverless (i.e., 1 package = 1 Data API call). We then built batch versions for persisting packages and package relations (see methods ```_save_packages_batch``` and ```_save_ec2_package_relations_batch``` in file ```lambdas/helper/dal.py```) that batch insert up to 200 SQL statement into a single Data API call (i.e., 200 packages = 1 Data API call). This reduced the overall time to persist 100 package objects from 18 secs (one at time) to 828ms (single batch)!
 
 The picture below depicts X-Ray telling us that calling the Data API individually for every EC2 package that we want to store in Aurora Serverless is not a good idea (takes 17.1 secs).
 
@@ -230,7 +230,7 @@ We also used batching to persist EC2-Package relations (161 ms).
 
 Thanks for the hand AWS X-Ray!
 
-## Running the Lambdas Locally (experimental)
+## Running Lambda Functions Locally
 
 To run Lambda function ```GetEC2InfoLambda``` locally using the environment variables defined in ```local/env_variables.json``` and the event input file ```GetEC2InfoLambda-event.json``` do the following:
 
@@ -238,6 +238,8 @@ To run Lambda function ```GetEC2InfoLambda``` locally using the environment vari
 # from the project's root directory
 local/run_local.sh config-dev GetEC2InfoLambda
 ```
+
+Exercise: Create an event JSON file for the ```AddEC2InfoLambda``` Lambda function and invoke it locally.
 
 ## License Summary
 
