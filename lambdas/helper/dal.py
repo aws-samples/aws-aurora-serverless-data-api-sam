@@ -82,7 +82,10 @@ class DataAccessLayer:
     #-----------------------------------------------------------------------------------------------
     @xray_recorder.capture('find_package')
     def find_package(self, package_name, package_version):
-        sql = f'select * from {package_table_name} where package_name="{DataAccessLayer._escape_sql_string(package_name)}" and package_version="{DataAccessLayer._escape_sql_string(package_version)}"'
+        sql = f'select package_name, package_version' \
+              f' from {package_table_name}' \
+              f' where package_name="{DataAccessLayer._escape_sql_string(package_name)}"' \
+              f' and package_version="{DataAccessLayer._escape_sql_string(package_version)}"'
         response = self.execute_sql(sql)
         return self._build_object_from_db_response(response)
 
@@ -91,7 +94,9 @@ class DataAccessLayer:
         ignore = 'ignore' if ignore_key_conflict else ''
         package_name_esc = DataAccessLayer._escape_sql_string('package_name')
         package_version_esc = DataAccessLayer._escape_sql_string('package_version')
-        sql = f'insert {ignore} into {package_table_name} (package_name, package_version) values ("{package_name_esc}","{package_version_esc}")'
+        sql = f'insert {ignore} into {package_table_name} ' \
+              f' (package_name, package_version)' \
+              f' values ("{package_name_esc}","{package_version_esc}")'
         response = self.execute_sql(sql)
         return response
 
@@ -102,7 +107,9 @@ class DataAccessLayer:
         for idx, package in enumerate(package_list):
             package_name_esc = DataAccessLayer._escape_sql_string(package['package_name'])
             package_version_esc = DataAccessLayer._escape_sql_string(package['package_version'])
-            package_sql = f'insert {ignore} into {package_table_name} (package_name, package_version) values ("{package_name_esc}","{package_version_esc}")'
+            package_sql = f'insert {ignore} into {package_table_name}' \
+                          f' (package_name, package_version)' \
+                          f' values ("{package_name_esc}","{package_version_esc}")'
             sql_stmt = f'{package_sql};{sql_stmt}'
             if (1+idx) % batch_size == 0:
                 self.execute_sql(sql_stmt)
@@ -116,7 +123,9 @@ class DataAccessLayer:
     @xray_recorder.capture('find_ec2_package_relations')
     def _find_ec2_package_relations(self, aws_instance_id):
         aws_instance_id_esc = DataAccessLayer._escape_sql_string(aws_instance_id)
-        sql = f'select * from {ec2_package_table_name} where aws_instance_id="{aws_instance_id_esc}"'
+        sql = f'select aws_instance_id, package_name, package_version' \
+              f' from {ec2_package_table_name}' \
+              f' where aws_instance_id="{aws_instance_id_esc}"'
         response = self.execute_sql(sql)
         return self._build_object_from_db_response(response)
 
@@ -125,7 +134,9 @@ class DataAccessLayer:
         aws_instance_id_esc = DataAccessLayer._escape_sql_string(aws_instance_id)
         package_name_esc = DataAccessLayer._escape_sql_string('package_name')
         package_version_esc = DataAccessLayer._escape_sql_string('package_version')
-        sql = f'insert into {ec2_package_table_name} (aws_instance_id, package_name, package_version) values ("{aws_instance_id_esc}", "{package_name_esc}", "{package_version_esc}")'
+        sql = f'insert into {ec2_package_table_name}' \
+              f' (aws_instance_id, package_name, package_version)' \
+              f' values ("{aws_instance_id_esc}", "{package_name_esc}", "{package_version_esc}")'
         response = self.execute_sql(sql)
         return response
 
@@ -137,7 +148,9 @@ class DataAccessLayer:
         for idx, package in enumerate(package_list):
             package_name_esc = DataAccessLayer._escape_sql_string(package['package_name'])
             package_version_esc = DataAccessLayer._escape_sql_string(package['package_version'])
-            relation_sql = f'insert {ignore} into {ec2_package_table_name} (aws_instance_id, package_name, package_version) values ("{aws_instance_id_esc}", "{package_name_esc}","{package_version_esc}")'
+            relation_sql = f'insert {ignore} into {ec2_package_table_name}' \
+                           f' (aws_instance_id, package_name, package_version)' \
+                           f' values ("{aws_instance_id_esc}", "{package_name_esc}","{package_version_esc}")'
             sql_stmt = f'{relation_sql};{sql_stmt}'
             if (1+idx) % batch_size == 0:
                 self.execute_sql(sql_stmt)
@@ -155,9 +168,9 @@ class DataAccessLayer:
 
     def _build_ec2_insert_sql_statement(self, record):
         sql = list()
-        sql.append(f'INSERT INTO {ec2_table_name} (')
+        sql.append(f'insert into {ec2_table_name} (')
         sql.append(', '.join(record.keys()))
-        sql.append(') VALUES (')
+        sql.append(') values (')
         sql.append(', '.join(f'"{DataAccessLayer._escape_sql_string(v)}"' for v in record.values()))
         sql.append(')')
         return ''.join(sql)
@@ -165,7 +178,10 @@ class DataAccessLayer:
     @xray_recorder.capture('find_ec2')
     def find_ec2(self, aws_instance_id):
         self._xray_add_metadata('aws_instance_id', aws_instance_id)
-        sql = f'select * from {ec2_table_name} where aws_instance_id="{DataAccessLayer._escape_sql_string(aws_instance_id)}"'
+        sql = f'select aws_instance_id, aws_region, aws_account, creation_date_utc' \
+              f' from {ec2_table_name}' \
+              f' where aws_instance_id="{DataAccessLayer._escape_sql_string(aws_instance_id)}"'
+
         response = self.execute_sql(sql)
         ec2s = self._build_object_from_db_response(response)
         for ec2_obj in ec2s:
