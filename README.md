@@ -79,11 +79,11 @@ cd deploy_scripts/ddl_scripts
 ./deploy_scripts/package_api.sh config-dev && ./deploy_scripts/deploy_api.sh config-dev
 ```
 
+Upon completion, the deploy script will print the output parameters produced by the deployed API stack. Take note of the ```ApiEndpoint``` output parameter value.
+
 ## APIs
 
-Use the AWS Console to find out the API Endpoint for the stage named by variable ```api_stage_name``` in the ```config-dev-env.sh``` file.
-
-Once you know the API endpoint, you can use [Postman](https://www.getpostman.com/downloads/) or ```curl``` to invoke and test the APIs.
+You can now use a REST API client such as [Postman](https://www.getpostman.com/downloads/) or the  ```curl``` command to invoke the EC2 Inventory API. You'll use the ```ApiEndpoint``` value you grabbed in the previous step for that (see next).
 
 ### Add EC2 info to inventory
 
@@ -91,7 +91,7 @@ Add a new EC2 to the inventory by specifying the EC2 instance id (```aws_instanc
 
 #### Request
 
-```POST: https://[Api-EndPoint]/ec2/{aws_instance_id}```
+```POST: https://[EpiEndpoint]/ec2/{aws_instance_id}```
 
 Example:
 
@@ -155,7 +155,7 @@ Get information about an EC2 from the inventory by specifying the EC2 instance i
 #### Request
 
 ```
-GET: https://[Api-EndPoint]/ec2/{aws_instance_id}
+GET: https://[EpiEndpoint]/ec2/{aws_instance_id}
 ```
 
 Example:
