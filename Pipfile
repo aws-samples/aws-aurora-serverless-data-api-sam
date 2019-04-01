@@ -12,6 +12,7 @@ uuid = "*"
 [packages]
 boto3 = "*"
 aws-xray-sdk = "*"
+pymysql = "*"
 
 [requires]
 python_version = "3.6"

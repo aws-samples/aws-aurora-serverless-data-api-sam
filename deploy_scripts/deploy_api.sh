@@ -16,7 +16,7 @@ env_type=$1
 . "./deploy_scripts/${env_type}-env.sh"
 
 sam deploy \
-    --template-file "${sam_build_dir}/$gen_api_cfn_template" \
+    --template-file "${sam_build_dir}/${gen_api_cfn_template}" \
     --stack-name $api_stack_name \
     --parameter-overrides \
         ProjectName="$app_name" \

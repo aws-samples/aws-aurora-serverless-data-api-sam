@@ -3,3 +3,4 @@
 .vscode/settings.json
 .aws-sam/
 **/.pytest_cache/
+tmp

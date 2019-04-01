@@ -30,6 +30,7 @@ sam build \
    -s $lambdas_dir
 
 # package lambdas and dependencies in S3
+rm -f "${sam_build_dir}/${gen_api_cfn_template}"
 sam package \
    --s3-bucket $s3_bucket_deployment_artifacts \
-   --output-template-file "${sam_build_dir}/$gen_api_cfn_template"
+   --output-template-file "${sam_build_dir}/${gen_api_cfn_template}"

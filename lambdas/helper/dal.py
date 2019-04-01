@@ -1,26 +1,24 @@
-'''
- * Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the "Software"), to deal in the Software
- * without restriction, including without limitation the rights to use, copy, modify,
- * merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-'''
-#-----------------------------------------------------------------------------------------------
-# Data Access Layer
-#-----------------------------------------------------------------------------------------------
+"""
+  Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
-import boto3
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this
+  software and associated documentation files (the "Software"), to deal in the Software
+  without restriction, including without limitation the rights to use, copy, modify,
+  merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+  INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+  PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+"""
+
 import json
 import os
+import boto3
+import pymysql
 from .logging import get_logger
 
 logger = get_logger(__name__)
@@ -44,6 +42,12 @@ class DataAccessLayer:
     def _xray_add_metadata(self, name, value):
         if xray_recorder and xray_recorder.current_subsegment():
             return xray_recorder.current_subsegment().put_metadata(name, value)
+
+    @staticmethod
+    def _escape_sql_string(string_value):
+        escaped_string = pymysql.escape_string(string_value.strip())
+        logger.debug(f'Escaped SQL String [before: {string_value}, after: {escaped_string}]')
+        return escaped_string
 
     @xray_recorder.capture('execute_sql')
     def execute_sql(self, sql_stmt):
@@ -78,14 +82,16 @@ class DataAccessLayer:
     #-----------------------------------------------------------------------------------------------
     @xray_recorder.capture('find_package')
     def find_package(self, package_name, package_version):
-        sql = f'select * from {package_table_name} where package_name="{package_name}" and package_version="{package_version}"'
+        sql = f'select * from {package_table_name} where package_name="{DataAccessLayer._escape_sql_string(package_name)}" and package_version="{DataAccessLayer._escape_sql_string(package_version)}"'
         response = self.execute_sql(sql)
         return self._build_object_from_db_response(response)
 
     @xray_recorder.capture('save_package')
     def save_package(self, package_name, package_version, ignore_key_conflict=True):
         ignore = 'ignore' if ignore_key_conflict else ''
-        sql = f'insert {ignore} into {package_table_name} (package_name, package_version) values ("{package_name}","{package_version}")'
+        package_name_esc = DataAccessLayer._escape_sql_string('package_name')
+        package_version_esc = DataAccessLayer._escape_sql_string('package_version')
+        sql = f'insert {ignore} into {package_table_name} (package_name, package_version) values ("{package_name_esc}","{package_version_esc}")'
         response = self.execute_sql(sql)
         return response
 
@@ -94,7 +100,9 @@ class DataAccessLayer:
         ignore = 'ignore' if ignore_key_conflict else ''
         sql_stmt = ''
         for idx, package in enumerate(package_list):
-            package_sql = f'insert {ignore} into {package_table_name} (package_name, package_version) values ("{package["package_name"]}","{package["package_version"]}")'
+            package_name_esc = DataAccessLayer._escape_sql_string(package['package_name'])
+            package_version_esc = DataAccessLayer._escape_sql_string(package['package_version'])
+            package_sql = f'insert {ignore} into {package_table_name} (package_name, package_version) values ("{package_name_esc}","{package_version_esc}")'
             sql_stmt = f'{package_sql};{sql_stmt}'
             if (1+idx) % batch_size == 0:
                 self.execute_sql(sql_stmt)
@@ -107,13 +115,17 @@ class DataAccessLayer:
     #-----------------------------------------------------------------------------------------------
     @xray_recorder.capture('find_ec2_package_relations')
     def _find_ec2_package_relations(self, aws_instance_id):
-        sql = f'select * from {ec2_package_table_name} where aws_instance_id="{aws_instance_id}"'
+        aws_instance_id_esc = DataAccessLayer._escape_sql_string(aws_instance_id)
+        sql = f'select * from {ec2_package_table_name} where aws_instance_id="{aws_instance_id_esc}"'
         response = self.execute_sql(sql)
         return self._build_object_from_db_response(response)
 
     @xray_recorder.capture('save_ec2_package_relation')
     def _save_ec2_package_relation(self, aws_instance_id, package_name, package_version):
-        sql = f'insert into {ec2_package_table_name} (aws_instance_id, package_name, package_version) values ("{aws_instance_id}", "{package_name}", "{package_version}")'
+        aws_instance_id_esc = DataAccessLayer._escape_sql_string(aws_instance_id)
+        package_name_esc = DataAccessLayer._escape_sql_string('package_name')
+        package_version_esc = DataAccessLayer._escape_sql_string('package_version')
+        sql = f'insert into {ec2_package_table_name} (aws_instance_id, package_name, package_version) values ("{aws_instance_id_esc}", "{package_name_esc}", "{package_version_esc}")'
         response = self.execute_sql(sql)
         return response
 
@@ -121,8 +133,11 @@ class DataAccessLayer:
     def _save_ec2_package_relations_batch(self, aws_instance_id, package_list, batch_size=200, ignore_key_conflict=True):
         ignore = 'ignore' if ignore_key_conflict else ''
         sql_stmt = ''
+        aws_instance_id_esc = DataAccessLayer._escape_sql_string(aws_instance_id)
         for idx, package in enumerate(package_list):
-            relation_sql = f'insert {ignore} into {ec2_package_table_name} (aws_instance_id, package_name, package_version) values ("{aws_instance_id}", "{package["package_name"]}","{package["package_version"]}")'
+            package_name_esc = DataAccessLayer._escape_sql_string(package['package_name'])
+            package_version_esc = DataAccessLayer._escape_sql_string(package['package_version'])
+            relation_sql = f'insert {ignore} into {ec2_package_table_name} (aws_instance_id, package_name, package_version) values ("{aws_instance_id_esc}", "{package_name_esc}","{package_version_esc}")'
             sql_stmt = f'{relation_sql};{sql_stmt}'
             if (1+idx) % batch_size == 0:
                 self.execute_sql(sql_stmt)
@@ -143,14 +158,14 @@ class DataAccessLayer:
         sql.append(f'INSERT INTO {ec2_table_name} (')
         sql.append(', '.join(record.keys()))
         sql.append(') VALUES (')
-        sql.append(', '.join(f'"{v}"' for v in record.values()))
+        sql.append(', '.join(f'"{DataAccessLayer._escape_sql_string(v)}"' for v in record.values()))
         sql.append(')')
         return ''.join(sql)
 
     @xray_recorder.capture('find_ec2')
     def find_ec2(self, aws_instance_id):
         self._xray_add_metadata('aws_instance_id', aws_instance_id)
-        sql = f'select * from {ec2_table_name} where aws_instance_id="{aws_instance_id}"'
+        sql = f'select * from {ec2_table_name} where aws_instance_id="{DataAccessLayer._escape_sql_string(aws_instance_id)}"'
         response = self.execute_sql(sql)
         ec2s = self._build_object_from_db_response(response)
         for ec2_obj in ec2s:

@@ -12,7 +12,7 @@ function error() {
 }
 
 [[ -n "$1" ]] || error "Missing environment name (eg, dev, uat, prod)"
-[[ -n "$2" ]] || error "Lambda function name"
+[[ -n "$2" ]] || error "Lambda function name (eg, GetEC2InfoLambda)"
 env_type=$1
 lambda_function=$2
 
