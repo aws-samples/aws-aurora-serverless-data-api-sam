@@ -28,4 +28,4 @@ sam deploy \
         CAPABILITY_IAM
 
 # Print the Stack Output
-aws cloudformation describe-stacks --stack-name $api_stack_name --query 'Stacks[0].Outputs'
+sleep 5 && aws cloudformation describe-stacks --stack-name $api_stack_name --query 'Stacks[0].Outputs'
