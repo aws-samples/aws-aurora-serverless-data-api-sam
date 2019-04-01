@@ -16,8 +16,8 @@
 """
 
 from helper.dal import *
-from helper.utils import *
-from helper.logging import get_logger
+from helper.lambdautils import *
+from helper.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -37,6 +37,9 @@ def validate_path_parameters(event):
         raise ValueError('Invalid input - missing aws_instance_id as part of path parameters')
     return event['pathParameters']['aws_instance_id']
 
+#-----------------------------------------------------------------------------------------------
+# Lambda Entrypoint
+#-----------------------------------------------------------------------------------------------
 def handler(event, context):
     try:
         logger.info(f'Event received: {event}')
@@ -49,5 +52,4 @@ def handler(event, context):
         logger.debug(f'Output: {output}')
         return success(output)
     except Exception as e:
-        logger.error(f'Error: {e}')
-        return error(400, str(e))
+        return handle_error(e)

@@ -17,8 +17,8 @@
 
 import os
 from helper.dal import *
-from helper.utils import *
-from helper.logging import get_logger
+from helper.lambdautils import *
+from helper.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -43,7 +43,7 @@ def validate_ec2_path_parameters(event):
 def validate_ec2_input_parameters(input_fields):
     for field in input_fields:
         if field not in ec2_valid_fields:
-            raise ValueError(f'Invalid EC2 input parameter "{field}"!')
+            raise ValueError(f'Invalid EC2 input parameter: {field}')
 
 def validate_input(event):
     aws_instance_id = validate_ec2_path_parameters(event)
@@ -61,11 +61,8 @@ def handler(event, context):
         logger.info(f'Event received: {event}')
         aws_instance_id, input_fields = validate_input(event)
         dal.save_ec2(aws_instance_id, input_fields)
-        output = {
-            'new_record': input_fields
-        }
+        output = {'new_record': input_fields}
         logger.debug(f'Output: {output}')
         return success(output)
     except Exception as e:
-        logger.error(f'Error: {e}')
-        return error(400, str(e))
+        return handle_error(e)

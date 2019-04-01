@@ -1,0 +1,32 @@
+{
+    "resource": "/ec2/{aws_instance_id}",
+    "path": "/ec2/instance-12346",
+    "httpMethod": "POST",
+    "headers": {
+        "Accept": "* /*",
+        "accept-encoding": "gzip, deflate",
+        "cache-control": "no-cache",
+        "Content-Type": "application/json",
+        "X-Amzn-Trace-Id": "Root=1-5ca1937f-ff43def8dcc20eb0a67779e8",
+    },
+    "pathParameters": {
+        "aws_instance_id": "instance-12346"
+    },
+    "requestContext": {
+        "resourceId": "o3xe3p",
+        "resourcePath": "/ec2/{aws_instance_id}",
+        "httpMethod": "POST",
+        "extendedRequestId": "XcP75F__IAMFjIA=",
+        "requestTime": "01/Apr/2019: 04: 28: 47 +0000",
+        "path": "/dev/ec2/instance-12346",
+        "accountId": "665243897136",
+        "protocol": "HTTP/1.1",
+        "stage": "dev",
+        "domainPrefix": "p7sz7f51mf",
+        "requestTimeEpoch": 1554092927347,
+        "requestId": "a4545caa-5436-11e9-a130-af1393d42df1",
+        "domainName": "p7sz7f51mf.execute-api.us-east-1.amazonaws.com",
+        "apiId": "p7sz7f51mf"
+    },
+    "body": "{\"aws_account\": \"123456789012\", \"aws_region\": \"us-east-1\", \"packages\": [ {\"package_name\": \"package-1\",\"package_version\": \"v1\"},{\"package_name\": \"package-1\",\"package_version\": \"v2\"}] }"
+}

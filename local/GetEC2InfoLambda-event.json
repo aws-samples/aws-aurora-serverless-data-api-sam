@@ -1,19 +1,13 @@
 {
-    "resource": "/ami/{aws_instance_id}",
-    "path": "/ami/i-0000000001",
+    "resource": "/ec2/{aws_instance_id}",
+    "path": "/ec2/i-0000000001",
     "httpMethod": "POST",
     "headers": {
         "Accept": "*/*",
         "accept-encoding": "gzip, deflate",
         "cache-control": "no-cache",
         "Content-Type": "application/json",
-        "Host": "9ru2poro88.execute-api.us-east-1.amazonaws.com",
-        "Postman-Token": "4b9e5218-978d-42ea-9b18-ba4568f62df0",
-        "User-Agent": "PostmanRuntime/7.3.0",
         "X-Amzn-Trace-Id": "Root=1-5c747f89-9713cbc075d265403910db80",
-        "X-Forwarded-For": "72.21.196.65",
-        "X-Forwarded-Port": "443",
-        "X-Forwarded-Proto": "https"
     },
     "pathParameters": {
         "aws_instance_id": "i-0000000001"
