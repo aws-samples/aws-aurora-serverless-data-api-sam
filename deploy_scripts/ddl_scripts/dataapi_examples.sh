@@ -15,4 +15,4 @@ env_type=$1
 
 . "../${env_type}-env.sh"
 
-python create_schema.py
+python dataapi_examples.py

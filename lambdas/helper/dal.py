@@ -54,16 +54,37 @@ class DataAccessLayer:
         logger.debug(f'Escaped SQL String [before: {string_value}, after: {escaped_string}]')
         return escaped_string
 
-    @xray_recorder.capture('execute_sql')
-    def execute_sql(self, sql_stmt):
-        logger.debug(f'Running SQL: {sql_stmt}')
+    @xray_recorder.capture('execute_statement')
+    def execute_statement(self, sql_stmt, sql_params=[]):
+        parameters = f' with parameters: {sql_params}' if len(sql_params) > 0 else ''
+        print(f'Running SQL statement: {sql_stmt}{parameters}')
         self._xray_add_metadata('sql_statement', sql_stmt)
         try:
-            result = self._rdsdata_client.execute_sql(
-                awsSecretStoreArn=self._db_credentials_secrets_store_arn,
+            result = self._rdsdata_client.execute_statement(
+                secretArn=self._db_credentials_secrets_store_arn,
                 database=self._database_name,
-                dbClusterOrInstanceArn=self._db_cluster_arn,
-                sqlStatements=sql_stmt)
+                resourceArn=self._db_cluster_arn,
+                sql=sql_stmt,
+                parameters=sql_params)
+        except Exception as e:
+            logger.debug(f'Error running SQL statement (error class: {e.__class__})')
+            raise DataAccessLayerException(e) from e
+        else:
+            self._xray_add_metadata('rdsdata_executesql_result', json.dumps(result))
+            return result
+
+    @xray_recorder.capture('batch_execute_statement')
+    def batch_execute_statement(self, sql_stmt, sql_param_sets=[]):
+        parameters = f' with parameters: {sql_param_sets}' if len(sql_param_sets) > 0 else ''
+        print(f'Running SQL statement: {sql_stmt}{parameters}')
+        self._xray_add_metadata('sql_statement', sql_stmt)
+        try:
+            result = self._rdsdata_client.execute_statement(
+                secretArn=self._db_credentials_secrets_store_arn,
+                database=self._database_name,
+                resourceArn=self._db_cluster_arn,
+                sql=sql_stmt,
+                parameterSets=sql_param_sets)
         except Exception as e:
             logger.debug(f'Error running SQL statement (error class: {e.__class__})')
             raise DataAccessLayerException(e) from e
@@ -97,7 +118,7 @@ class DataAccessLayer:
                 f' from {package_table_name}' \
                 f' where package_name="{DataAccessLayer._escape_sql_string(package_name)}"' \
                 f' and package_version="{DataAccessLayer._escape_sql_string(package_version)}"'
-            response = self.execute_sql(sql)
+            response = self.execute_statement(sql)
             return self._build_object_from_db_response(response)
         except DataAccessLayerException as de:
             raise de
@@ -112,7 +133,7 @@ class DataAccessLayer:
         sql = f'insert {ignore} into {package_table_name} ' \
               f' (package_name, package_version)' \
               f' values ("{package_name_esc}","{package_version_esc}")'
-        response = self.execute_sql(sql)
+        response = self.execute_statement(sql)
         return response
 
     @xray_recorder.capture('save_packages_batch')
@@ -127,10 +148,10 @@ class DataAccessLayer:
                           f' values ("{package_name_esc}","{package_version_esc}")'
             sql_stmt = f'{package_sql};{sql_stmt}'
             if (1+idx) % batch_size == 0:
-                self.execute_sql(sql_stmt)
+                self.execute_statement(sql_stmt)
                 sql_stmt = ''
         if len(sql_stmt) > 0:
-            self.execute_sql(sql_stmt)
+            self.execute_statement(sql_stmt)
 
     #-----------------------------------------------------------------------------------------------
     # EC2-PACKAGE Functions
@@ -141,7 +162,7 @@ class DataAccessLayer:
         sql = f'select aws_instance_id, package_name, package_version' \
               f' from {ec2_package_table_name}' \
               f' where aws_instance_id="{aws_instance_id_esc}"'
-        response = self.execute_sql(sql)
+        response = self.execute_statement(sql)
         return self._build_object_from_db_response(response)
 
     @xray_recorder.capture('save_ec2_package_relation')
@@ -152,7 +173,7 @@ class DataAccessLayer:
         sql = f'insert into {ec2_package_table_name}' \
               f' (aws_instance_id, package_name, package_version)' \
               f' values ("{aws_instance_id_esc}", "{package_name_esc}", "{package_version_esc}")'
-        response = self.execute_sql(sql)
+        response = self.execute_statement(sql)
         return response
 
     @xray_recorder.capture('save_ec2_package_relations_batch')
@@ -168,10 +189,10 @@ class DataAccessLayer:
                            f' values ("{aws_instance_id_esc}", "{package_name_esc}","{package_version_esc}")'
             sql_stmt = f'{relation_sql};{sql_stmt}'
             if (1+idx) % batch_size == 0:
-                self.execute_sql(sql_stmt)
+                self.execute_statement(sql_stmt)
                 sql_stmt = ''
         if len(sql_stmt) > 0:
-            self.execute_sql(sql_stmt)
+            self.execute_statement(sql_stmt)
 
     #-----------------------------------------------------------------------------------------------
     # EC2 Functions
@@ -197,7 +218,7 @@ class DataAccessLayer:
             sql = f'select aws_instance_id, aws_region, aws_account, creation_date_utc' \
                 f' from {ec2_table_name}' \
                 f' where aws_instance_id="{DataAccessLayer._escape_sql_string(aws_instance_id)}"'
-            response = self.execute_sql(sql)
+            response = self.execute_statement(sql)
             ec2s = self._build_object_from_db_response(response)
             for ec2_obj in ec2s:
                 # find ec2-package relations and add packages to returned ec2 object
@@ -220,7 +241,7 @@ class DataAccessLayer:
             ec2_fields.pop('packages')
             ec2_record = self._build_ec2_record(aws_instance_id, ec2_fields)
             sql_stmt = self._build_ec2_insert_sql_statement(ec2_record)
-            response = self.execute_sql(sql_stmt)
+            response = self.execute_statement(sql_stmt)
             if 'packages' in input_fields:
                 self._save_packages_batch(input_fields['packages'])
                 self._save_ec2_package_relations_batch(aws_instance_id, input_fields['packages'] )

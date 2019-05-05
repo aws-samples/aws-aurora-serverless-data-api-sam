@@ -15,7 +15,7 @@ fi
 # Prefix to use to name provisioned resources
 export env_type="dev"
 # S3 bucket to store packaged Lambdas
-export s3_bucket_deployment_artifacts="ec2-inventory-artifacts"
+export s3_bucket_deployment_artifacts="[your-s3-bucket]"
 
 # ----- RDS Stack ----- #
 # RDS database name (a-zA-Z0-9_)
@@ -25,9 +25,9 @@ export db_cluster_name="${env_type}-aurora-ec2-inventory-cluster"
 # RDS Master Username
 export db_master_username="db_user" # password will be create on-the-fly and associtated w/ this user
 # RDS Aurora Serverless Cluster Subnets
-export db_subnet_1="subnet-7659772f"
-export db_subnet_2="subnet-590b1f2e"
-export db_subnet_3="subnet-49550962"
+export db_subnet_1="[your-subnet-1]"
+export db_subnet_2="[your-subnet-2]"
+export db_subnet_3="[your-subnet-3]"
 
 # ----- API Stack ----- #
 export api_stage_name="dev"

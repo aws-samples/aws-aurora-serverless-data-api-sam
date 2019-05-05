@@ -56,6 +56,20 @@ pipenv --venv
 
 The deployment script reads the values from config file ```config-dev-env.sh``` (__important__: This file will be used everywhere! Make sure you edit the file with config value for your AWS account!).
 
+Create (or reuse) an S3 bucket to store Lambda packages. Your AWS credentials must give you access to put objects in that bucket.
+
+```
+# Creating an S3 bucket (if needed)
+aws s3 mb s3://[your-s3-bucket-name]
+```
+
+Make sure you update file `config-dev-env.sh` with the S3 bucket name otherwise the deployment will fail.
+
+```bash
+# Specifying the S3 bucket that will store Lambda package artifacts
+export s3_bucket_deployment_artifacts="[your-s3-bucket-name]"
+```
+
 Now deploy the database resources by invoking the deploy script and passing the config file as an input parameter (__important__: Notice that we only specify the prefix of the config file (eg, `config-dev`) not the full file name).
 
 ```bash
