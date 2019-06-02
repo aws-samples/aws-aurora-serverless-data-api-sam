@@ -74,13 +74,12 @@ def example3():
     def build_object_from_response(response):
         result = []
         records = response['records']
-        if len(records) > 0:
-            for record in records:
-                obj = {
-                    'package_name': record[0]['stringValue'],
-                    'package_version': record[1]['stringValue']
-                }
-                result.append(obj)
+        for record in records:
+            obj = {
+                'package_name': record[0]['stringValue'],
+                'package_version': record[1]['stringValue']
+            }
+            result.append(obj)
         return result
 
     sql = 'select package_name, package_version from package'
@@ -93,7 +92,7 @@ def example4():
     print('===== Example - simple insert with parameters =====')
     sql = 'insert into package (package_name, package_version) values (:package_name, :package_version)'
     sql_parameters = [
-        {'name':'package_name', 'value':{'stringValue': f'package-2'}},
+        {'name':'package_name', 'value':{'stringValue': 'package-2'}},
         {'name':'package_version', 'value':{'stringValue': 'version-1'}}
     ]
     response = execute_statement(sql, sql_parameters)
@@ -108,7 +107,7 @@ def example5():
         try:
             sql = 'insert into package (package_name, package_version) values (:package_name, :package_version)'
             sql_parameters = [
-                {'name':'package_name', 'value':{'stringValue': f'package-2'}},
+                {'name':'package_name', 'value':{'stringValue': 'package-2'}},
                 {'name':'package_version', 'value':{'stringValue': 'version-1'}}
             ]
             response = execute_statement(sql, sql_parameters)
@@ -188,6 +187,8 @@ example7()
 
 # Questions:
 # - Max batch size?
-# - Is there a built-in retry logic when database is queried while paused?
 # - Max transaction size?
+# - Is there a built-in retry logic when database is queried while paused?
+# - Whic SDKs will be available at launch?
+# - Will CloudFormation be able to enable the Data API in a cluster at launch or only via AWS CLI?
 

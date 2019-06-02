@@ -13,6 +13,6 @@ function error() {
 [[ -n "$1" ]] || error "Missing environment name (eg, dev, qa, prod)"
 env_type=$1
 
-. "../${env_type}-env.sh"
+. "../deploy_scripts/${env_type}-env.sh"
 
 python dataapi_examples.py

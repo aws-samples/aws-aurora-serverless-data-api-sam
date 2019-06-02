@@ -5,3 +5,4 @@
 **/.pytest_cache/
 tmp
 deploy_scripts/is*.sh
+lambdas/test_dal.py
