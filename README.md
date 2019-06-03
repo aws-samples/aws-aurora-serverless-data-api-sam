@@ -6,7 +6,7 @@ Please check the corresponding [AWS Blog Post](TODO) for further details.
 
 ## Limitations
 
-As of now (March 2019), the Data API (still in Beta) is only available in ```us-east-1``` and requires the latest boto3 version (which is already packaged as part of the Lambda packagin.). So, __please make sure you deploy this project in ```us-east-1```__.
+At the time of this writing (June 2019), the Data API is publicly available in US East (N. Virginia), US East (Ohio), US West (Oregon), Europe (Ireland), and Asia Pacific (Tokyo) Regions.
 
 ## Architecture
 
