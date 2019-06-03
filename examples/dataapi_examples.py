@@ -176,7 +176,8 @@ def example7():
         print(f'Number of records updated: {len(response["updateResults"])}')
     print(f'Transaction Status: {transaction_response["transactionStatus"]}')
 
-# example0()
+# Running our examples in sequence
+example0()
 example1()
 example2()
 example3()
@@ -184,11 +185,4 @@ example4()
 example5()
 example6()
 example7()
-
-# Questions:
-# - Max batch size?
-# - Max transaction size?
-# - Is there a built-in retry logic when database is queried while paused?
-# - Whic SDKs will be available at launch?
-# - Will CloudFormation be able to enable the Data API in a cluster at launch or only via AWS CLI?
 
