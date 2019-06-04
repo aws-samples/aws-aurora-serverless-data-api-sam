@@ -7,9 +7,9 @@ name = "pypi"
 aws-sam-cli = "*"
 pytest = "*"
 requests = "*"
+"boto3" = "*"
 
 [packages]
-boto3 = "*"
 aws-xray-sdk = "*"
 pymysql = "*"
 

@@ -1,13 +1,11 @@
 aws-xray-sdk==2.4.2
-boto3==1.9.141
-botocore==1.12.141
+botocore==1.12.160
 docutils==0.14
 future==0.17.1
 jmespath==0.9.4
-jsonpickle==1.1
+jsonpickle==1.2
 pymysql==0.9.3
 python-dateutil==2.8.0; python_version >= '2.7'
-s3transfer==0.2.0
 six==1.12.0
-urllib3==1.24.1; python_version >= '3.4'
+urllib3==1.25.3; python_version >= '3.4'
 wrapt==1.11.1
