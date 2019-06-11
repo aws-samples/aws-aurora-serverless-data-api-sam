@@ -11,6 +11,11 @@ db_credentials_secrets_store_arn = 'arn:aws:secretsmanager:us-east-1:66524389713
 # This is the Data API client that will be used in our examples below
 rds_client = boto3.client('rds-data')
 
+#--------------------------------------------------------------------------------
+# Helper Functions
+#--------------------------------------------------------------------------------
+
+# Timing function executions
 def timeit(f):
     def timed(*args, **kw):
         ts = time.time()
@@ -34,6 +39,10 @@ def execute_statement(sql, sql_parameters=[]):
     )
     return response
 
+#--------------------------------------------------------------------------------
+# Various Examples of Using the Data API
+#--------------------------------------------------------------------------------
+
 # Create the DB Schema (here just table package)
 @timeit
 def example_create_table():
@@ -52,8 +61,8 @@ def example_create_table():
 
 # Simple select example with no parameters
 @timeit
-def example_simple_select():
-    print('===== Example - Simple select statement =====')
+def example_simple_query():
+    print('===== Example - Simple query =====')
     def execute_statement(sql):
         response = rds_client.execute_statement(
             secretArn=db_credentials_secrets_store_arn,
@@ -64,45 +73,45 @@ def example_simple_select():
         return response
 
     response = execute_statement(f'select * from package')
-    print(f'response: {response}')
+    print(response['records'])
 
 # Simple select example with parameters
 # Talk about parameters as a means to prevent SQL injections
 @timeit
-def example_select_with_parameters():
-    print('===== Example - select with parameters =====')
+def example_parameterized_query():
+    print('===== Example - Parameterized query =====')
     sql = 'select * from package where package_name=:package_name'
     package_name = 'package-100'
     sql_parameters = [{'name':'package_name', 'value':{'stringValue': f'{package_name}'}}]
     response = execute_statement(sql, sql_parameters)
-    print(f'response: {response}')
+    print(response['records'])
 
 # Fetch results
 # Order of parameters on select is relevant (eg, package_name, package_version)
 @timeit
-def example_fetch_select_results():
-    print('===== Example - fetch select results =====')
+def example_format_query_results():
+    print('===== Example - Format query results =====')
 
-    def build_object_from_response(response):
-        result = []
-        records = response['records']
-        for record in records:
-            obj = {
-                'package_name': record[0]['stringValue'],
-                'package_version': record[1]['stringValue']
-            }
-            result.append(obj)
-        return result
+    # Formating query returned Field
+    def formatField(field):
+        return list(field.values())[0]
+
+    # Formating query returned Record
+    def formatRecord(record):
+        return [formatField(field) for field in record]
+
+    # Formating query returned Field
+    def formatRecords(records):
+        return [formatRecord(record) for record in records]
 
     sql = 'select package_name, package_version from package'
     response = execute_statement(sql)
-    result = build_object_from_response(response)
-    print(f'result: {result}')
+    print(formatRecords(response['records']))
 
 # Simple insert example
 @timeit
-def example_simple_insert_with_parameters():
-    print('===== Example - simple insert with parameters =====')
+def example_simple_parameterized_insert():
+    print('===== Example - Simple parameterized insert =====')
     sql = 'insert into package (package_name, package_version) values (:package_name, :package_version)'
     sql_parameters = [
         {'name':'package_name', 'value':{'stringValue': 'package-1'}},
@@ -114,7 +123,7 @@ def example_simple_insert_with_parameters():
 # Handling exceptions
 @timeit
 def example_exception_handling():
-    print('===== Example - handling exceptions - Duplicate Primary Key =====')
+    print('===== Example - Exception handling - Duplicate Primary Key =====')
     class DataAccessLayerException(Exception):
         pass
     def add_package():
@@ -149,7 +158,7 @@ def batch_execute_statement(sql, sql_parameter_sets):
 # Ask Data API what's the max batch size!
 @timeit
 def example_batch_insert():
-    print('===== Example - batch SQL Insert statements =====')
+    print('===== Example - Batch insert =====')
     sql = 'insert into package (package_name, package_version) values (:package_name, :package_version)'
     sql_parameter_sets = []
     for i in range(10,20):
@@ -163,8 +172,8 @@ def example_batch_insert():
 
 # Transactions (commit and rollback)
 @timeit
-def example_transactions(package_start_idx, package_end_idx):
-    print('===== Example - transactions with commit and rollback =====')
+def example_handling_transactions(package_start_idx, package_end_idx):
+    print('===== Example - Handling transactions (commit and rollback) =====')
     # begin transaction
     transaction = rds_client.begin_transaction(
         secretArn=db_credentials_secrets_store_arn,
@@ -199,16 +208,16 @@ def example_transactions(package_start_idx, package_end_idx):
 example_create_table()
 print('\n')
 
-example_simple_select()
+example_simple_query()
 print('\n')
 
-example_select_with_parameters()
+example_parameterized_query()
 print('\n')
 
-example_fetch_select_results()
+example_format_query_results()
 print('\n')
 
-example_simple_insert_with_parameters()
+example_simple_parameterized_insert()
 print('\n')
 
 example_exception_handling()
@@ -218,8 +227,8 @@ example_batch_insert()
 print('\n')
 
 # key 100 is a duplicate - transaction will rollback
-example_transactions(91,101)
+example_handling_transactions(91,101)
 print('\n')
 
 # transaction will be committed successfully
-example_transactions(1000,1020)
+example_handling_transactions(1000,1020)
