@@ -6,3 +6,4 @@
 tmp
 deploy_scripts/is*.sh
 lambdas/test_dal.py
+lambdas/test_lambda.py

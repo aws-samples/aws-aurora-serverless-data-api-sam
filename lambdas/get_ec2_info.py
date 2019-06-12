@@ -46,7 +46,7 @@ def handler(event, context):
         aws_instance_id = validate_path_parameters(event)
         results = dal.find_ec2(aws_instance_id)
         output = {
-            'record': results[0] if len(results) > 0 else {},
+            'record': results,
             'record_found': len(results) > 0
         }
         logger.debug(f'Output: {output}')

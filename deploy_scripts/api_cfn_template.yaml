@@ -119,7 +119,7 @@ Resources:
           Statement:
             - Effect: Allow
               Action:
-                - rds-data:ExecuteSql
+                - rds-data:*
               Resource:
                 Fn::ImportValue:
                   !Sub "${DatabaseStackName}-DatabaseClusterArn"

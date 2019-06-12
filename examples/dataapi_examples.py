@@ -53,7 +53,7 @@ def example_create_table():
     with open(table_ddl_script_file, 'r') as ddl_script:
         ddl_script_content=ddl_script.read()
         execute_statement(ddl_script_content)
-    # add some data
+    # populate table w/ some data for querying
     execute_statement('delete from package')
     for i in range(100,110):
         execute_statement(f'insert into package (package_name, package_version) values ("package-{i}", "version-1")')
@@ -92,15 +92,15 @@ def example_parameterized_query():
 def example_format_query_results():
     print('===== Example - Format query results =====')
 
-    # Formating query returned Field
+    # Formatting query returned Field
     def formatField(field):
         return list(field.values())[0]
 
-    # Formating query returned Record
+    # Formatting query returned Record
     def formatRecord(record):
         return [formatField(field) for field in record]
 
-    # Formating query returned Field
+    # Formatting query returned Field
     def formatRecords(records):
         return [formatRecord(record) for record in records]
 
@@ -171,10 +171,39 @@ def example_batch_insert():
     print(f'Number of records updated: {len(response["updateResults"])}')
 
 # Transactions (commit and rollback)
+# Here we redefine functions execute_statement() and batch_execute_statement() to support transactions
 @timeit
 def example_handling_transactions(package_start_idx, package_end_idx):
+
+    @timeit
+    def execute_statement(sql, sql_parameters=[], transaction_id=None):
+        parameters = {
+            'secretArn': db_credentials_secrets_store_arn,
+            'database': database_name,
+            'resourceArn': db_cluster_arn,
+            'sql': sql,
+            'parameters': sql_parameters
+        }
+        if transaction_id is not None:
+            parameters['transactionId'] = transaction_id
+        response = rds_client.execute_statement(**parameters)
+        return response
+
+    @timeit
+    def batch_execute_statement(sql, sql_parameter_sets, transaction_id=None):
+        parameters = {
+            'secretArn': db_credentials_secrets_store_arn,
+            'database': database_name,
+            'resourceArn': db_cluster_arn,
+            'sql': sql,
+            'parameterSets': sql_parameter_sets
+        }
+        if transaction_id is not None:
+            parameters['transactionId'] = transaction_id
+        response = rds_client.batch_execute_statement(**parameters)
+        return response
+
     print('===== Example - Handling transactions (commit and rollback) =====')
-    # begin transaction
     transaction = rds_client.begin_transaction(
         secretArn=db_credentials_secrets_store_arn,
         resourceArn=db_cluster_arn,
@@ -188,7 +217,7 @@ def example_handling_transactions(package_start_idx, package_end_idx):
                     {'name':'package_version', 'value':{'stringValue': 'version-1'}}
             ]
             sql_parameter_sets.append(entry)
-        response = batch_execute_statement(sql, sql_parameter_sets)
+        response = batch_execute_statement(sql, sql_parameter_sets, transaction['transactionId'])
     except Exception as e:
         print(f'Error: {e}')
         transaction_response = rds_client.rollback_transaction(
