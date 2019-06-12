@@ -5,8 +5,8 @@ import time
 
 # Update these 3 parameters for your environment
 database_name = 'ec2_inventory_db'
-db_cluster_arn = 'arn:aws:rds:us-east-1:665243897136:cluster:dev-aurora-ec2-inventory-cluster'
-db_credentials_secrets_store_arn = 'arn:aws:secretsmanager:us-east-1:665243897136:secret:dev-AuroraUserSecret-DhpkOI'
+db_cluster_arn = 'arn:aws:rds:us-east-1:123456789012:cluster:dev-aurora-ec2-inventory-cluster'
+db_credentials_secrets_store_arn = 'arn:aws:secretsmanager:us-east-1:123456789012:secret:dev-AuroraUserSecret-DhpkOI'
 
 # This is the Data API client that will be used in our examples below
 rds_client = boto3.client('rds-data')
