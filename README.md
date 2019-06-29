@@ -1,8 +1,8 @@
 ## Intro
 
-This project provides comprehensive sample code that shows how to use the Amazon Aurora Serverless and the Data API to build a Serverless application on AWS.
+This project provides comprehensive sample code that shows how to build a Serverless application on AWS using [Amazon API Gateway](https://aws.amazon.com/api-gateway/), [AWS Lambda](https://aws.amazon.com/lambda/),[ Amazon Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/) (MySQL) and the new [Data API](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html). By using the Data API, our Lambda functions do not have to deal with persistent database connections. Instead, we interact with the Aurora Serverless MySQL database via an API. How cool, eh?
 
-Check my blog post [Using the Data API to interact with an Amazon Aurora Serverless MySQL database](TODO) on the AWS Database Blog for various code examples using the Data API.
+Check my blog post [Using the Data API to interact with an Amazon Aurora Serverless MySQL database](TODO) on the AWS Database Blog for detailed code samples exemplifying how to use the Data API for different use cases.
 
 ## Limitations
 
