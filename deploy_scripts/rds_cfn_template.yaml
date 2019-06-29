@@ -64,8 +64,8 @@ Resources:
       EngineVersion: 5.6.10a
       ScalingConfiguration:
         AutoPause: true
-        MaxCapacity: 8
-        MinCapacity: 2
+        MaxCapacity: 4
+        MinCapacity: 1
         SecondsUntilAutoPause: 900 # 15 min
       DBSubnetGroupName:
         Ref: DBSubnetGroup

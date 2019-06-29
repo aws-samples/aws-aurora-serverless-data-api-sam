@@ -1,12 +1,12 @@
 ## Intro
 
-This project provides comprehensive sample code that shows how to leverage Amazon Aurora Serverless and the Data API to build connectionless Serverless applications on AWS.
+This project provides comprehensive sample code that shows how to use the Amazon Aurora Serverless and the Data API to build a Serverless application on AWS.
 
-Please check the corresponding [AWS Blog Post](TODO) for further details.
+Check my blog post [Using the Data API to interact with an Amazon Aurora Serverless MySQL database](TODO) on the AWS Database Blog for various code examples using the Data API.
 
 ## Limitations
 
-At the time of this writing (June 2019), the Data API is publicly available in US East (N. Virginia), US East (Ohio), US West (Oregon), Europe (Ireland), and Asia Pacific (Tokyo) Regions.
+At the time of this writing (July 2019), the Data API is publicly available in US East (N. Virginia), US East (Ohio), US West (Oregon), Europe (Ireland), and Asia Pacific (Tokyo) Regions.
 
 ## Architecture
 
