@@ -12,9 +12,9 @@ At the time of this writing (July 2019), the Data API is publicly available in U
 
 ![Simple EC2 Inventory Serverless API Using Aurora Serverless and the Data API](docs/aurora-serverless-sam-architecture.png)
 
-The architecture of the simple EC2 Inventory Serverless API solution discussed in our [Blog Post](TODO) is shown above. Client applications send REST requests to a provisioned [Amazon API Gateway](https://aws.amazon.com/api-gateway/) endpoint which then routes the request to the appropriate Lambda function based on the type of API call. The [Lambda](https://aws.amazon.com/lambda/) functions implement the core API logic and make use of database credentials stored on AWS Secrets Manager to connect to the Data API Endpoint for the [Aurora serverless](https://aws.amazon.com/rds/aurora/serverless/) MySQL cluster. By leveraging the Data API, Lambda functions do not have to manage database connections or connection pools. Instead, simple API calls are made via the Data API to issue SQL commands to the Aurora Serverless database.
+In this project, we build a simple Rest API to store and retrieve information about software packages installed in EC2 instances. The picture above shows the two Rest APIs (see the _POST_ and _GET_ APIs). Client applications send REST requests to an [Amazon API Gateway](https://aws.amazon.com/api-gateway/) endpoint which then routes the request to the appropriate Lambda function. The [Lambda](https://aws.amazon.com/lambda/) functions implement the core API logic and make use of database credentials stored on AWS Secrets Manager to connect to the Data API Endpoint for the [Aurora serverless](https://aws.amazon.com/rds/aurora/serverless/) MySQL cluster. By leveraging the Data API, Lambda functions do not have to manage database connections or connection pools. Instead, simple API calls are made via the Data API to issue SQL commands to the Aurora Serverless database.
 
-By using Aurora Serverless we can take advantage of the optional auto-pause feature which allows us to automatically and seamlessly shut down and restart the database when needed without any impact to application code. This makes sense as the EC2 Inventory database will only be updated sporadically when EC2 instances are launched or terminated. In the occasional event of a large number of EC2 instances being launched simultaneously, the Aurora Serverless database will automatically scale up to meet traffic demands.
+By using Aurora Serverless MySQL we can take advantage of the optional auto-pause feature which allows us to automatically and seamlessly shut down and restart the database when needed without any impact to application code. This makes sense as the EC2 Inventory database will only be updated sporadically when EC2 instances are launched or terminated. In the occasional event of a large number of EC2 instances being launched simultaneously, the Aurora Serverless database will automatically scale up to meet traffic demands.
 
 ## Required software
 
@@ -228,7 +228,7 @@ Example:
 
 ## Observability
 
-We enabled observability of this application via [AWS X-Ray](https://aws.amazon.com/xray/). Take a look at source file ```lambdas/helper/dal.py``` and search for ```x-ray``` and ```xray``` to find related logic.
+We enabled observability of this application via [AWS X-Ray](https://aws.amazon.com/xray/). Take a look at the data access layer source file ([dal.py](https://github.com/aws-samples/aws-aurora-serverless-data-api-sam/blob/master/lambdas/helper/dal.py#L67)) for details. Search for terms `x-ray` and `xray`.
 
 ## Running Lambda Functions Locally
 
@@ -243,7 +243,7 @@ Exercise: Create an event JSON file for the ```AddEC2InfoLambda``` Lambda functi
 
 ## Running Integration Tests
 
-Various integration tests are available under directory ```tests/```. The tests use the ```pytest``` framework to run locally but make API calls against the actual API endpoint deployed in the cloud. So, before running the tests, make sure the API is actually deployed on AWS.
+A few integration tests are available under directory ```tests/```. The tests use the ```pytest``` framework to make API calls against our deployed API. So, before running the tests, make sure the API is actually deployed to AWS.
 
 The API endpoint is discovered automatically from the test script based on the ```ApiEndpoint``` output parameter produced by the API CloudFormation stack.
 
