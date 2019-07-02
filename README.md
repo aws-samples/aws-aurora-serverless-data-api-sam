@@ -1,10 +1,10 @@
-## Intro
 
-This project shows how to build a fully Serverless application on AWS (including the SQL database) using [Amazon API Gateway](https://aws.amazon.com/api-gateway/), [AWS Lambda](https://aws.amazon.com/lambda/),[ Amazon Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/) (MySQL) and the new [Data API](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html). By using the Data API, our Lambda functions do not have to manage persistent database connections which greatly simplifies application logic. 
+
+This project shows how to build a fully Serverless application on AWS (including the SQL database) using [Amazon API Gateway](https://aws.amazon.com/api-gateway/), [AWS Lambda](https://aws.amazon.com/lambda/),[ Amazon Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/) (MySQL) and the new [Data API](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html). By using the Data API, our Lambda functions do not have to manage persistent database connections which greatly simplifies application logic.
 
 Cool, eh?
 
-If you are not familiar with the Amazon Aurora Serverless Data API, please have a quick look at my blog post [Using the Data API to interact with an Amazon Aurora Serverless MySQL database](https://aws.amazon.com/blogs/database/using-the-data-api-to-interact-with-an-amazon-aurora-serverless-mysql-database/). It provides code samples for various Data API use cases.
+If you are not familiar with the Amazon Aurora Serverless Data API, please have a quick look at my blog post [Using the Data API to interact with an Amazon Aurora Serverless MySQL database](https://aws.amazon.com/blogs/database/using-the-data-api-to-interact-with-an-amazon-aurora-serverless-mysql-database/). It shows how to provision an Amazon Aurora Serverless database (MySQL) using infrastructure-as-code and provides code samples for various Data API use cases.
 
 ## Context
 
@@ -12,11 +12,11 @@ Imagine for a moment an organization where the majority of application workloads
 
 ## Solution
 
-This is what this project is all about. It describes an **end-to-end API-based Serverless solution for a simple EC2 Package Inventory system leveraging [Amazon Aurora Serverless (MySQL)](https://aws.amazon.com/rds/aurora/serverless/) and the [Data API](https://aws.amazon.com/blogs/aws/new-data-api-for-amazon-aurora-serverless/) for connectionless SQL database access**.
+This is what this project is all about. It describes an **end-to-end API-based Serverless solution for a simple EC2 Package Inventory system leveraging [Amazon Aurora Serverless (MySQL)](https://aws.amazon.com/rds/aurora/serverless/) and the [Data API](https://aws.amazon.com/blogs/aws/new-data-api-for-amazon-aurora-serverless/) for access to the database**.
 
 ![Simple EC2 Package Inventory Serverless API Using Aurora Serverless and the Data API](docs/aurora-serverless-sam-architecture.png)
 
-The picture above shows the two Rest APIs (see the _POST_ and _GET_ APIs) that will be built. The `POST:/ec2/aws_instance_id` REST API stores EC2- and package-related information on the database. API `GET:/ec2/aws_instance_id` retrieves the information.
+The architecture diagram above shows the two REST APIs (see the _POST_ and _GET_ APIs) that we're going to build. The `POST:/ec2/aws_instance_id` REST API stores EC2- and package-related information on the SQL database for a given EC2 instance. API `GET:/ec2/aws_instance_id` retrieves the stored information from the database for a given EC2 instance.
 
 Client applications send REST requests to an [Amazon API Gateway](https://aws.amazon.com/api-gateway/) endpoint which then routes the request to the appropriate Lambda function. The [Lambda](https://aws.amazon.com/lambda/) functions implement the core API logic and make use of database credentials stored on AWS Secrets Manager to connect to the Data API Endpoint for the [Aurora serverless](https://aws.amazon.com/rds/aurora/serverless/) MySQL cluster. By leveraging the Data API, Lambda functions will not have to manage persistent database connections which greatly simplifies application logic. Instead, simple API calls will be performed via the Data API to issue SQL commands to the Aurora Serverless database.
 
