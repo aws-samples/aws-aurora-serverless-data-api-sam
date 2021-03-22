@@ -8,6 +8,7 @@ aws-sam-cli = "*"
 pytest = "*"
 requests = "*"
 "boto3" = "*"
+pyyaml = ">=4.2b1"
 
 [packages]
 aws-xray-sdk = "*"
